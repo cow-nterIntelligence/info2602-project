@@ -1,6 +1,6 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-# FastAPIStarter
+# info2602-project
+
+Bulls and Cows Game Application
 
 A FastAPI template for info2602 students based on the [fullstack fastapi template](https://github.com/fastapi/full-stack-fastapi-template) with a few modifications to make it a layered architecture that combines the best of MVC and service repository pattern. This codebase is structured to reduce the repeatibility of code [(the DRY principle)](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) as it was demonstrated in class that code is usually repeated when implementing functionality for a CLI app, a headless API, and a fullstack app. When writing software at scale, deduplicating code is important as it makes the codebase easier to maintain, test and scale.
 
@@ -40,10 +40,10 @@ The job of the **service layer** is to handle the **RULES** of the application. 
 
 ## App Structure
 
-This app is structuresd as follows
+This app is structured as follows
 
 <pre>
-FastAPIStarter
+info2602-project
 |-- app
 |    |- api
 |    |- dependencies
@@ -57,7 +57,7 @@ FastAPIStarter
 |    |- views
 |-- tests/
 |-- env.example
-|-- pyptoject.toml
+|-- pyproject.toml
 |-- README.md
 </pre>
 
@@ -69,7 +69,7 @@ FastAPIStarter
 `tests` This contains the tests (unit tests, integration tests, etc) for the application.
 
 ##### Folders inside App
-`api` This folder contains the endpoints (route fucntions) of our app.
+`api` This folder contains the endpoints (route functions) of our app.
 
 `dependencies` This folder contains the functions that we'd usually use for dependency injection e.g. getting the information of the user who's performing the request, getting a reference to the database, etc
 
@@ -83,17 +83,16 @@ FastAPIStarter
 
 `utilities` This contain generic helper functions
 
-`static` this contains folders that contain css, js, img and other assets we may need when this app is responsible for rendering of the frontend UI>
+`static` this contains folders that contain css, js, img and other assets we may need when this app is responsible for rendering of the frontend UI
 
 `templates` this contains our jinja2 templates
 
-`views` this contains the route functions used for when this app is responsible for rendering the frontnend UI
+`views` this contains the route functions used for when this app is responsible for rendering the frontend UI
 
 > Note that the file env.example provides a default set of configuration values for this application. you **MUST** create a copy of this file named `.env` before launching the app. The preconfigured environment allows a user to have an app that uses a sqlite database for a datastore as well as some other default configurations. The values in this should ideally be modified for production. For more possible variables, check out the `config.py` file
 
 
 ## Using this in production
-
 
 If you so ever choose to use this template for your own projects, please consider the following:
 
@@ -105,11 +104,3 @@ If you so ever choose to use this template for your own projects, please conside
 3. You'd need to look into a database migration / upgrade tool like alembic
 4. You may want to dockerize the application for easier deployment
 5. You may want to switch from storing cookies in localstorage to only cookies depending on your security needs.
-=======
-# info2602-project
->>>>>>> ab43f3ed9772802a6aede65bddea030596bd4b96
-=======
-# info2602-project
-
-Bulls and Cows Game Application
->>>>>>> c0cd69b (Added bulls & cows api)
