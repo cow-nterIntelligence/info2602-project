@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 # FastAPIStarter
 
 A FastAPI template for info2602 students based on the [fullstack fastapi template](https://github.com/fastapi/full-stack-fastapi-template) with a few modifications to make it a layered architecture that combines the best of MVC and service repository pattern. This codebase is structured to reduce the repeatibility of code [(the DRY principle)](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself) as it was demonstrated in class that code is usually repeated when implementing functionality for a CLI app, a headless API, and a fullstack app. When writing software at scale, deduplicating code is important as it makes the codebase easier to maintain, test and scale.
@@ -107,3 +108,8 @@ If you so ever choose to use this template for your own projects, please conside
 =======
 # info2602-project
 >>>>>>> ab43f3ed9772802a6aede65bddea030596bd4b96
+=======
+# info2602-project
+
+Bulls and Cows Game Application
+>>>>>>> c0cd69b (Added bulls & cows api)

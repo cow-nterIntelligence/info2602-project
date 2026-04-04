@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -210,3 +211,5 @@ __marimo__/
 database.db
 =======
 >>>>>>> ab43f3ed9772802a6aede65bddea030596bd4b96
+=======
+>>>>>>> c0cd69b (Added bulls & cows api)
