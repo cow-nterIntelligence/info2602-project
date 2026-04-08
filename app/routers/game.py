@@ -1,22 +1,22 @@
-from fastapi import APIRouter
-import random
+from fastapi import APIRouter, HTTPException
+from app.utilities.game_utils import get_daily_puzzle, bulls_and_cows  # Adjust as needed
+
+from datetime import date
 
 router = APIRouter()
 
-secret_number =""
-
-@router.get("/start")
-def start_game():
-    global secret_number
-    secret_number = "".join(random.sample("0123456789", 4))
-    return {"message": "Game started! Guess the 4 digit number."}
+@router.get("/puzzle")
+def show_info():
+    # Optionally provide info about today's puzzle (do not reveal the answer!)
+    return {"message": "There is one puzzle per day for everyone. Use /guess/{guess} to play."}
 
 @router.get("/guess/{guess}")
-def make_guess(guess:str):
-    if len(guess)!=4 or not guess.isdigit():
-        return {"ERROR": "Invalid guess. Please enter a 4 digit number."}
-
-        bulls = sum(a == b for a, b in zip(secret_number,guess))
-        cows = sum(min(secret_number.count(x), guess.count(x)) for x in set(guess)) - bulls
-        return {"bulls": bulls, "cows": cows}
-        
+def make_guess(guess: str):
+    if len(guess) != 4 or not guess.isdigit() or len(set(guess)) != 4:
+        raise HTTPException(status_code=400, detail="Guess must be 4 unique digits.")
+    today = date.today().strftime("%Y-%m-%d")
+    puzzle = get_daily_puzzle(today)
+    bulls, cows = bulls_and_cows(puzzle, guess)
+    solved = bulls == 4
+    return {"bulls": bulls, "cows": cows, "solved": solved}
+     
