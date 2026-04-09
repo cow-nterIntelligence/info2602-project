@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% block title %}Game | Bulls & Cows{% endblock %}
+
+{% block body %}
+
+<!-- Floating background mascots -->
+<div id="mascot-floats"></div>
+
+<div class="center-welcome">
+    <div class="welcome-user-banner">Welcome, <b>{{ user.username }}</b>!</div>
+</div>
+
+<div class="game-main-flex">
+  <!-- Left side: instructions and secret code -->
+  <div class="game-left">
+    <div class="instructions-box gamebox-instructions">
+      <b>Guess the secret 4-digit number.</b><br>
+      🐂 = right digit, right spot.<br>
+      🐄 = right digit, wrong spot.<br>
+      Only one puzzle a day!
+    </div>
+    <div class="mystery-code-area" style="margin:1.2em 0 0 0;">
+      <div class="secret-label">Secret Code</div>
+      {% if reveal_code %}
+        <div class="secret-code reveal">{{ puzzle }}</div>
+      {% else %}
+        <div class="secret-code hidden">? ? ? ?</div>
+      {% endif %}
+      {% if status != "won" and not reveal_code %}
+        <form method="post" action="/game/app" style="margin:0;" class="giveup-form">
+          <input type="hidden" name="action" value="giveup">
+          <button type="submit" class="giveup-btn">Give Up</button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Right side: guess area and history -->
+  <div class="game-right">
+    {% if status != "won" and not reveal_code %}
+    <div class="guess-clickpad-box">
+        <div id="guess-warning" class="guess-warning">{% if error %}{{ error }}{% endif %}</div>
+        <div class="guess-preview">
+            <span id="guess-preview-digits">_ _ _ _</span>
+        </div>
+        <div class="digit-pad">
+            {% for n in range(10) %}
+            <button type="button" class="pad-btn" onclick="addDigit('{{ n }}')">{{ n }}</button>
+            {% endfor %}
+        </div>
+        <div class="digit-pad" style="margin-top:.3em;">
+            <button type="button" class="pad-btn pad-back" onclick="removeDigit()">&larr;</button>
+            <button type="button" class="pad-btn pad-clear" onclick="clearGuess()">C</button>
+        </div>
+        <form method="post" action="/game/app" id="guess-form-js" class="guess-form-inline" onsubmit="return submitGuess();">
+            <input type="hidden" name="guess" id="guess-input-hidden">
+            <button class="start-btn guess-btn" type="submit" id="submit-guess-btn" disabled>Guess</button>
+        </form>
+    </div>
+    {% elif status == "won" %}
+        <div class="winner-box">🎉 You WON! The code was <b>{{ guesses[-1].guess }}</b></div>
+    {% elif reveal_code %}
+        <div class="reveal-box">
+          <span style="font-size:1.2em; color: #d04610;">You gave up! The code was:</span><br>
+          <span style="font-size:2em; color:#b85a00; font-family:'Fredoka One',monospace;">{{ puzzle }}</span>
+        </div>
+    {% endif %}
+
+    <div class="guess-history-box" style="margin-top:2em;">
+        <h3>Your Guesses</h3>
+        <table class="guess-table">
+            <tr>
+                <th>#</th>
+                <th>Guess</th>
+                <th>Bulls</th>
+                <th>Cows</th>
+            </tr>
+            {% for entry in guesses %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ entry.guess }}</td>
+                <td>{{ entry.bulls }}</td>
+                <td>{{ entry.cows }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+  </div>
+</div>
+
+<script>
+let guess = [];
+function addDigit(n) {
+    if (guess.length >= 4) return;
+    n = String(n);
+    if (guess.includes(n)) {
+        showWarning("Digits must be unique!");
+        return;
+    }
+    hideWarning();
+    guess.push(n);
+    updatePreview();
+}
+function removeDigit() {
+    guess.pop();
+    hideWarning();
+    updatePreview();
+}
+function clearGuess() {
+    guess = [];
+    hideWarning();
+    updatePreview();
+}
+function updatePreview() {
+    document.getElementById('guess-preview-digits').textContent = guess.length ? guess.join(' ') : '_ _ _ _';
+    document.getElementById('guess-input-hidden').value = guess.join('');
+    document.getElementById('submit-guess-btn').disabled = (guess.length !== 4);
+}
+function showWarning(msg) {
+    document.getElementById('guess-warning').textContent = msg;
+}
+function hideWarning() {
+    document.getElementById('guess-warning').textContent = '';
+}
+function submitGuess() {
+    if (guess.length !== 4 || new Set(guess).size !== 4) {
+        showWarning("Enter 4 unique digits!");
+        return false;
+    }
+    return true;
+}
+document.addEventListener('DOMContentLoaded', updatePreview);
+</script>
+
+<!-- Bouncing mascots HERD! -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const herd = [
+    {type: "bull", emoji: "🐂", color: "#a87c1c", count: 3},
+    {type: "cow",  emoji: "🐄", color: "#999", count: 3}
+  ];
+  const mascotArea = document.getElementById("mascot-floats");
+  let mascotEls = [];
+  herd.forEach(cfg => {
+    for (let i = 0; i < cfg.count; ++i) {
+      let m = document.createElement("div");
+      m.className = `bouncer-mascot ${cfg.type}`;
+      m.textContent = cfg.emoji;
+      m.style.color = cfg.color;
+      mascotArea.appendChild(m);
+      mascotEls.push(m);
+    }
+  });
+  mascotEls.forEach(function(el) {
+    const size = 70;
+    function randBetween(a, b) { return a + Math.random() * (b - a); }
+    let vw = window.innerWidth, vh = window.innerHeight;
+    let x = randBetween(0, vw - size), y = randBetween(0, vh - size);
+    let dx = randBetween(0.5, 2) * (Math.random() < 0.5 ? 1 : -1);
+    let dy = randBetween(0.5, 2) * (Math.random() < 0.5 ? 1 : -1);
+    function move() {
+      vw = window.innerWidth; vh = window.innerHeight;
+      x += dx; y += dy;
+      if (x < 0 || x > vw - size) dx = -dx;
+      if (y < 0 || y > vh - size) dy = -dy;
+      x = Math.max(0, Math.min(vw - size, x));
+      y = Math.max(0, Math.min(vh - size, y));
+      el.style.left = x + "px";
+      el.style.top = y + "px";
+      requestAnimationFrame(move);
+    }
+    move();
+  });
+});
+</script>
+
+{% endblock %}

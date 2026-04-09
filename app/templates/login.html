@@ -1,101 +1,180 @@
-{% extends "base.html" %}
-{% block title %}Login{% endblock %}
-
-{% block external_js %}
-
-{% endblock %}
-
-
-{% block internal_css %}
-<style>
-    body {
-        background-color: #f8f9fa;
-    }
-
-    .login-container {
-        min-height: 100vh;
-    }
-
-    .login-card {
-        border: none;
-        border-radius: 1rem;
-        overflow: hidden;
-    }
-
-    .login-image {
-        background: linear-gradient(135deg, #0d6efd, #0dcaf0);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        padding: 3rem;
-    }
-
-    .form-section {
-        padding: 3rem;
-    }
-
-    .btn-primary {
-        border-radius: 0.5rem;
-    }
-
-    .form-control {
-        border-radius: 0.5rem;
-    }
-</style>
-{% endblock %}
-
-
-{% block content %}
-
-<div class="container login-container d-flex align-items-center justify-content-center">
-    <div class="card shadow-lg login-card col-lg-10">
-        <div class="row g-0">
-            <div class="col-lg-6 d-none d-lg-flex login-image">
-                <div class="text-center">
-                    <h2 class="mt-4 fw-bold">Welcome Back</h2>
-                    <p class="lead">Sign in to continue to the app</p>
-                </div>
-            </div>
-            <div class="col-lg-6 bg-white">
-                <div class="form-section">
-                    <h3 class="fw-bold mb-4">Login</h3>
-
-                    <form id="loginForm" method="POST">
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control form-control-md" id="username" name="username"
-                                required="required">
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
-                            <input type="password" class="form-control form-control-md" id="password" name="password"
-                                required>
-                        </div>
-
-                        <div class="d-grid mb-3">
-                            <button type="submit" class="btn btn-primary btn-lg">
-                                Sign In
-                            </button>
-
-                    </form>
-                </div>
-
-                <div class="d-grid mb-3">
-                    <a class="btn btn-secondary btn-lg" href="{{url_for('register_view')}}" role="button">
-                        Sign Up
-                    </a>
-                </div>
-
-
-                {% for message in get_flashed_messages(request) %}
-                <div class="alert alert-{{ message.type }}" role="alert">{{ message.message }}</div>
-                {% endfor %}
-            </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bulls & Cows | Login</title>
+    <!-- Google Fonts: Fredoka One for cartoon style -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Fredoka One', Arial, sans-serif;
+            background: linear-gradient(135deg, #fff7e6 0%, #ffe2c2 100%);
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            margin: auto;
+            margin-top: 7vh;
+            background: #fffee5;
+            border-radius: 1.4em;
+            box-shadow: 0 8px 32px rgba(80,40,0,0.17);
+            width: 410px;
+            max-width: 97vw;
+            padding: 2.2em 2.2em 1em 2.2em;
+            text-align: center;
+            border: 3px dashed #ffb43a;
+        }
+        .mascot {
+            font-size: 3em;
+            margin-bottom: 0.25em;
+            animation: bounce 2s infinite;
+            text-shadow: 2px 6px 9px #ffdeab55;
+            user-select: none;
+        }
+        @keyframes bounce {
+            0%, 100% { transform:translateY(0);}
+            50% { transform:translateY(-16px);}
+        }
+        h1 {
+            margin-bottom: 0.15em;
+            color: #ffb43a;
+            font-family: 'Fredoka One', Arial, sans-serif;
+            font-size: 2.2em;
+            letter-spacing: 0.04em;
+            text-shadow: 2px 4px 10px #ede6c1bd;
+        }
+        .desc {
+            color: #ae8602;
+            font-size: 1.11em;
+            margin-bottom: 1em;
+            line-height: 1.4;
+            font-family: 'Fredoka One', Arial, sans-serif;
+        }
+        .daily-tip {
+            margin-bottom:1em;
+            padding:1em;
+            background:#fff4e0;
+            color:#ad7d00;
+            border-radius:0.55em;
+            font-style:italic;
+            font-family: 'Fredoka One', Arial, sans-serif;
+            box-shadow:0 2px 11px #ffaf109e;
+        }
+        form {
+            margin-top: 0.7em;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1em;
+        }
+        input[type="text"], input[type="password"] {
+            padding: 0.74em;
+            border: 2px solid #ffdc8a;
+            border-radius: 0.8em;
+            background: #fffdf5;
+            font-size: 1.15em;
+            font-family: 'Fredoka One', Arial, sans-serif;
+            color: #a2690c;
+            box-shadow: 0 2px 8px #ffe5b3;
+            transition: border .2s, box-shadow .2s;
+        }
+        input[type="text"]:focus, input[type="password"]:focus {
+            outline: none;
+            border: 2px solid #ffb43a;
+            background: #fff9e6;
+            box-shadow: 0 2px 10px #ffd580bd;
+        }
+        input[type="submit"], button {
+            background: linear-gradient(90deg, #ffa71f 30%, #ffcb7e 100%);
+            color: #533800;
+            font-size: 1.2em;
+            font-family: 'Fredoka One', Arial, sans-serif;
+            font-weight: 700;
+            border: none;
+            border-radius: 0.7em;
+            padding: 0.8em;
+            cursor: pointer;
+            margin-top: 0.2em;
+            transition: filter 0.16s, box-shadow 0.15s;
+            box-shadow: 0 4px 16px #ffa82a16;
+        }
+        input[type="submit"]:hover, button:hover {
+            filter: brightness(0.96);
+            box-shadow: 0 2px 24px #ffa82a28;
+        }
+        .register-link {
+            margin-top: 1.2em;
+            font-size: 1em;
+            font-family: 'Fredoka One', Arial, sans-serif;
+        }
+        .register-link a {
+            color: #d97400;
+            text-decoration: none;
+            font-weight: 600;
+            margin-left: 0.1em;
+        }
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+        .flash {
+            margin-bottom: 1em;
+            padding: 0.98em 1.3em;
+            border-radius: 0.6em;
+            font-weight: 550;
+            font-family: 'Fredoka One', Arial, sans-serif;
+            text-align: left;
+            font-size: 1.05em;
+        }
+        .flash.danger { background: #ffebe7; color: #a30808; border: 2px solid #ffa99d; animation: shake 0.45s cubic-bezier(.36,.07,.19,.97) both;}
+        .flash.success { background: #e7ffe7; color: #177619; border: 2px solid #86ff94; }
+        .flash.info { background: #e7f2ff; color: #114977; border: 2px solid #91baff; }
+        /* Wiggle Animation */
+        @keyframes shake {
+            0%, 100% { transform:translateX(0);}
+            20%, 60% { transform:translateX(-9px);}
+            40%, 80% { transform:translateX(9px);}
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Cartoon Emoji Mascot -->
+        <div class="mascot" title="Bulls and Cows">🐂 🐄</div>
+        <h1>Bulls & Cows</h1>
+        <div class="desc">
+            <span>Guess the 4-digit secret code.<br>
+            Can you beat the herd today? 🎉</span>
         </div>
+        <!-- DAILY TIP: shows a random tip or greeting (Jinja2 template)-->
+        {% set tips=[
+          "Remember: All digits are unique!",
+          "Try classic starter codes like 1234 or 9876.",
+          "Only one puzzle per day for everyone!",
+          "Get four 🐂 and you win today’s challenge!",
+          "Come back daily for a new code!",
+          "Track your guessing history after sign in.",
+          "No cows were harmed in the making of this game! 🐄"
+        ] %}
+        <div class="daily-tip">💡 {{ tips|random }}</div>
 
+        <!-- FLASH MESSAGES -->
+        {% if request.session.get('messages') %}
+          {% for message, category in request.session['messages'] %}
+            <div class="flash {{ category }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+
+        <!-- LOGIN FORM -->
+        <form method="post" action="{{ request.url_for('login_action_ajax') }}">
+            <input autocomplete="username" required type="text" name="username" placeholder="Your nickname">
+            <input autocomplete="current-password" required type="password" name="password" placeholder="Secret password">
+            <input type="submit" value="Let me in! 🐂">
+        </form>
+        <div class="register-link">
+            New to the herd?<a href="{{ request.url_for('register_view') }}">Register here!</a>
+        </div>
     </div>
-</div>
-</div>
-{% endblock %}
+</body>
+</html>

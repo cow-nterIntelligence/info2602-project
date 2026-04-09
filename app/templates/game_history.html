@@ -1,0 +1,10 @@
+<h2>Bulls & Cows History</h2>
+{% for day, game in games.items() %}
+  <h4>{{ day }}</h4>
+  <ul>
+    {% for g in game %}
+      <li>{{ g.guess }} — Bulls: {{ g.bulls }}, Cows: {{ g.cows }} ({{ g.timestamp }})</li>
+    {% endfor %}
+  </ul>
+{% endfor %}
+<a href="{{ request.url_for('game_view') }}">Back to today</a>
