@@ -1,16 +1,27 @@
-<h2>Bulls & Cows — Daily Puzzle</h2>
-{% if solved %}
-  <p>You already solved today's puzzle. Come back tomorrow!</p>
-{% else %}
-  <form method="post" action="{{ request.url_for('game_guess') }}">
-    <input name="guess" maxlength="4" pattern="\d{4}" required>
-    <button type="submit">Guess</button>
-  </form>
-{% endif %}
-<h3>Your guesses today:</h3>
-<ul>
-{% for g in guesses %}
-  <li>{{ g.guess }} — Bulls: {{ g.bulls }}, Cows: {{ g.cows }} ({{ g.timestamp }})</li>
-{% endfor %}
-</ul>
-<a href="{{ request.url_for('game_history') }}">View history</a>
+{% extends "base.html" %}
+{% block title %}Game | Bulls & Cows{% endblock %}
+
+{% block body %}
+<div class="game-arena">
+    <!-- WELCOME USER! -->
+    <div class="welcome-user">
+        Welcome, <b>{{ user.username }}</b>!
+    </div>
+    <div class="center-banner">
+      <span class="main-mascots">🐂&amp;🐄</span>
+      <div class="main-banner-text">Ready to Play?</div>
+    </div>
+    <div class="instructions-card">
+      <div>
+        <b>Instructions:</b><br>
+        Guess the secret <b>4-digit number</b>.<br>
+        <span>🐂</span> = right digit, right spot<br>
+        <span>🐄</span> = right digit, wrong spot<br>
+        Only one puzzle a day. Good luck, codebreaker!
+      </div>
+    </div>
+    <form class="game-start-form" method="POST" action="/start">
+      <button class="start-btn" type="submit">Start Game 🎲</button>
+    </form>
+</div>
+{% endblock %}
