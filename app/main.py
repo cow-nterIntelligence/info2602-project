@@ -23,7 +23,7 @@ app = FastAPI(middleware=[
     lifespan=lifespan
 )   
 
-app.include_router(game.router, prefix="/game", tags=["Game"])
+app.include_router(game.router, prefix="/game")
 
 app.include_router(router)
 app.include_router(api_router)
