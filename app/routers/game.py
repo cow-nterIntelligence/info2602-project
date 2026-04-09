@@ -1,78 +1,115 @@
-from fastapi import APIRouter, Request, Form
-from fastapi.templating import Jinja2Templates
+from fastapi import APIRouter, Request, Form, Depends
+from fastapi.responses import HTMLResponse, RedirectResponse
+from sqlmodel import Session
 from datetime import date
-from app.utilities.game_utils import get_daily_puzzle, bulls_and_cows
+from collections import defaultdict
 
-router = APIRouter()
-templates = Jinja2Templates(directory="templates")
+from app.dependencies.session import SessionDep  # Use this instead!
+from app.dependencies.auth import get_current_user
+from app.models.user import User
+from app.repositories.daily_puzzle_repo import get_or_create_today_puzzle
+from app.repositories.game_guess_repo import (
+    get_user_guesses_today,
+    has_user_won_today,
+    create_guess,
+    get_user_history
+)
+from app.services.game_service import calculate_bulls_and_cows
+from app.main import templates
 
-@router.get("/app")
-async def show_game(request: Request):
-    session = request.session
-    today = date.today().strftime("%Y-%m-%d")
-    # Start/reset session data for today if needed
-    if session.get("puzzle_date") != today:
-        session["puzzle_date"] = today
-        session["guesses"] = []
-        session["status"] = "playing"
-    user = {"username": "alice"}  # Replace with real user logic
+router = APIRouter(tags=["game"])
 
-    puzzle = get_daily_puzzle(today)
-    context = {
+@router.get("/app", response_class=HTMLResponse)
+def show_game(
+    request: Request,
+    db_session: SessionDep,  # Just use SessionDep - no Depends() needed!
+    user: User = Depends(get_current_user)
+):
+    """Show today's puzzle - same for ALL users, but guesses are per-user"""
+    
+    puzzle = get_or_create_today_puzzle(db_session)
+    guesses = get_user_guesses_today(db_session, user.id)
+    
+    if has_user_won_today(db_session, user.id):
+        status = "won"
+    else:
+        status = "playing"
+    
+    return templates.TemplateResponse("game.html", {
         "request": request,
         "user": user,
-        "guesses": session.get("guesses", []),
-        "status": session.get("status", "playing"),
+        "guesses": guesses,
+        "status": status,
         "puzzle": puzzle,
-        "reveal_code": session.get("status") in ("won", "gaveup"),
+        "reveal_code": status in ("won", "gaveup"),
         "error": None
-    }
-    return templates.TemplateResponse("game.html", context)
+    })
 
 @router.post("/app")
-async def handle_guess(
+def handle_guess(
     request: Request,
+    db_session: SessionDep,
+    user: User = Depends(get_current_user),
     guess: str = Form(None),
     action: str = Form(None)
 ):
-    session = request.session
-    today = date.today().strftime("%Y-%m-%d")
-    puzzle = get_daily_puzzle(today)
-
-    # Reset session for a new day if needed
-    if session.get("puzzle_date") != today:
-        session["puzzle_date"] = today
-        session["guesses"] = []
-        session["status"] = "playing"
-
-    reveal_code = False
+    """Handle guess submission"""
+    
+    puzzle = get_or_create_today_puzzle(db_session)
     error = None
-
+    
     if action == "giveup":
-        session["status"] = "gaveup"
-        reveal_code = True
-    elif guess:
-        # Validate input: 4 unique digits, all numbers
+        return templates.TemplateResponse("game.html", {
+            "request": request,
+            "user": user,
+            "guesses": get_user_guesses_today(db_session, user.id),
+            "status": "gaveup",
+            "puzzle": puzzle,
+            "reveal_code": True,
+            "error": None
+        })
+    
+    if guess:
         if len(guess) != 4 or not guess.isdigit() or len(set(guess)) != 4:
             error = "Guess must be 4 unique digits."
+        elif has_user_won_today(db_session, user.id):
+            error = "You already solved today's puzzle!"
         else:
-            bulls, cows = bulls_and_cows(puzzle, guess)
-            session.setdefault("guesses", []).append({
-                "guess": guess,
-                "bulls": bulls,
-                "cows": cows
-            })
-            if bulls == 4:
-                session["status"] = "won"
-    user = {"username": "alice"}  # Replace with real user logic
+            bulls, cows = calculate_bulls_and_cows(puzzle, guess)
+            is_win = (bulls == 4)
+            create_guess(db_session, user.id, guess, bulls, cows, is_win)
+            return RedirectResponse(url="/game/app", status_code=303)
     
-    context = {
+    guesses = get_user_guesses_today(db_session, user.id)
+    status = "won" if has_user_won_today(db_session, user.id) else "playing"
+    
+    return templates.TemplateResponse("game.html", {
         "request": request,
         "user": user,
-        "guesses": session.get("guesses", []),
-        "status": session.get("status", "playing"),
+        "guesses": guesses,
+        "status": status,
         "puzzle": puzzle,
-        "reveal_code": reveal_code or session.get("status") in ("won", "gaveup"),
-        "error": error,
-    }
-    return templates.TemplateResponse("game.html", context)
+        "reveal_code": status in ("won", "gaveup"),
+        "error": error
+    })
+
+@router.get("/history", response_class=HTMLResponse)
+def game_history(
+    request: Request,
+    db_session: SessionDep,  # And here
+    user: User = Depends(get_current_user)
+):
+    """View play history"""
+    
+    guesses = get_user_history(db_session, user.id)
+    
+    games_by_day = defaultdict(list)
+    for g in guesses:
+        day_str = g.puzzle_date.strftime("%Y-%m-%d")
+        games_by_day[day_str].append(g)
+    
+    return templates.TemplateResponse("game_history.html", {
+        "request": request,
+        "user": user,
+        "games": dict(games_by_day)
+    })

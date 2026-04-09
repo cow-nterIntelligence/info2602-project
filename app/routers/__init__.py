@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from app.utilities.flash import get_flashed_messages
 from jinja2 import Environment, FileSystemLoader
 from app.config import get_settings
-
+from .game import router as game_router
 
 template_env = Environment(loader = FileSystemLoader("app/templates",), )
 template_env.globals['get_flashed_messages'] = get_flashed_messages
