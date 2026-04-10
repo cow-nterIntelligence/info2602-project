@@ -1,0 +1,58 @@
+{% extends "authenticated-base.html" %}
+
+{% block subpage_content %}
+
+<h2>Leaderboard</h2>
+
+<div>
+    <a href="{{ request.url_for('game_view') }}">Play Today</a>
+    &nbsp;|&nbsp;
+    <a href="{{ request.url_for('game_history') }}">My History</a>
+</div>
+
+<br>
+
+<!-- Date picker to view other days -->
+<form method="get" action="{{ request.url_for('game_leaderboard') }}">
+    <label for="day">View leaderboard for date:</label>
+    <input type="date" id="day" name="day" value="{{ selected_day }}" max="{{ today }}">
+    <button type="submit">Go</button>
+    {% if selected_day != today %}
+        <a href="{{ request.url_for('game_leaderboard') }}">Back to Today</a>
+    {% endif %}
+</form>
+
+<br>
+
+<h4>Puzzle date: {{ selected_day }}</h4>
+<p>Only players who solved the puzzle appear. Ranked by fewest guesses, then earliest solve time.</p>
+
+{% if leaderboard %}
+    <table border="1" cellpadding="8">
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Player</th>
+                <th>Guesses</th>
+                <th>Solved At</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for entry in leaderboard %}
+            <tr {% if entry.username == user.username %}style="background-color: #d0e8ff;"{% endif %}>
+                <td>{{ entry.rank }}</td>
+                <td>
+                    {{ entry.username }}
+                    {% if entry.username == user.username %}(You){% endif %}
+                </td>
+                <td>{{ entry.guess_count }}</td>
+                <td>{{ entry.solve_time }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>Nobody has solved today's puzzle yet. <a href="{{ request.url_for('game_view') }}">Be the first!</a></p>
+{% endif %}
+
+{% endblock %}

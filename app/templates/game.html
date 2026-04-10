@@ -1,0 +1,49 @@
+{% extends "authenticated-base.html" %}
+
+{% block subpage_content %}
+
+<h2>Bulls &amp; Cows — Daily Puzzle</h2>
+
+<p>
+    Guess the secret 4-digit number. All digits are unique.<br>
+    <strong>Bull</strong> = right digit, right position.
+    <strong>Cow</strong> = right digit, wrong position.
+</p>
+
+<div>
+    <a href="{{ request.url_for('game_leaderboard') }}">Leaderboard</a>
+    &nbsp;|&nbsp;
+    <a href="{{ request.url_for('game_history') }}">My History</a>
+</div>
+
+<br>
+
+{% if solved %}
+    <p><strong>You already solved today's puzzle! Come back tomorrow.</strong></p>
+{% else %}
+    <form method="post" action="{{ request.url_for('game_guess') }}">
+        <input name="guess" maxlength="4" pattern="\d{4}" inputmode="numeric" required placeholder="e.g. 1234">
+        <button type="submit">Submit Guess</button>
+    </form>
+{% endif %}
+
+<h3>Your guesses today:</h3>
+
+{% if guesses %}
+    <ul>
+    {% for g in guesses %}
+        <li>
+            <strong>{{ g.guess }}</strong> —
+            Bulls: {{ g.bulls }}, Cows: {{ g.cows }}
+            <em>({{ g.timestamp.strftime('%H:%M:%S') }})</em>
+            {% if g.bulls == 4 %}
+                <span class="material-symbols-outlined" style="color:green; font-size:1rem;">check_circle</span>
+            {% endif %}
+        </li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No guesses yet today. Enter one above!</p>
+{% endif %}
+
+{% endblock %}
