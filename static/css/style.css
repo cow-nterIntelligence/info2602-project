@@ -288,6 +288,17 @@ body {
   box-shadow: 0 2px 13px #c9ffe740;
   text-align: center;
 }
+.completed-message-box {
+  margin: 2em 0 1em 0;
+  font-size: 1.3em;
+  color: #1a1d2f;
+  background: #fff3cd;
+  border-radius: 1.5em;
+  padding: 1em 2em;
+  box-shadow: 0 2px 13px #ffeaa740;
+  text-align: center;
+  border: 2px solid #ffc107;
+}
 .guess-history-box {
   width: 100%;
   max-width: 500px;

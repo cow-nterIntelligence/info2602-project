@@ -26,7 +26,7 @@
       {% else %}
         <div class="secret-code hidden">? ? ? ?</div>
       {% endif %}
-      {% if status != "won" and not reveal_code %}
+      {% if not completed and status != "won" and not reveal_code %}
         <form method="post" action="/game/app" style="margin:0;" class="giveup-form">
           <input type="hidden" name="action" value="giveup">
           <button type="submit" class="giveup-btn">Give Up</button>
@@ -37,7 +37,19 @@
 
   <!-- Right side: guess area and history -->
   <div class="game-right">
-    {% if status != "won" and not reveal_code %}
+    {% if completed %}
+    <div class="completed-message-box">
+        <h3>You've already played today's game!</h3>
+        <p>Status: 
+            {% if status == "won" %}
+                <span style="color: green;">🎉 Won</span>
+            {% elif status == "gaveup" %}
+                <span style="color: orange;">Gave up</span>
+            {% endif %}
+        </p>
+        <p>Come back tomorrow for a new puzzle!</p>
+    </div>
+    {% elif status != "won" and not reveal_code %}
     <div class="guess-clickpad-box">
         <div id="guess-warning" class="guess-warning">{% if error %}{{ error }}{% endif %}</div>
         <div class="guess-preview">
