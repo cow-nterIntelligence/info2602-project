@@ -1,0 +1,59 @@
+{% extends "authenticated-base.html" %}
+
+{% block subpage_content %}
+
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="color: #2c2f45; font-weight: 700;">My Friends</h2>
+                <a href="{{ request.url_for('search_users_view') }}" class="btn btn-primary" style="background-color: #ffcf47; border: none; color: #1a1d2f; font-weight: 700;">
+                    <span class="material-symbols-outlined me-2" style="font-size: 1.2rem;">person_add</span>
+                    Add Friend
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% if friends %}
+    <div class="row">
+        {% for friend in friends %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card" style="border: 2px solid #f0d079; box-shadow: 0 4px 12px rgba(144, 104, 0, 0.1);">
+                <div class="card-body">
+                    <div style="display: flex; justify-content: space-between; align-items: start;">
+                        <div>
+                            <h5 class="card-title" style="color: #2c2f45; font-weight: 700;">{{ friend.username }}</h5>
+                            <p class="card-text text-muted" style="font-size: 0.9rem;">{{ friend.email }}</p>
+                        </div>
+                        <form method="post" action="{{ request.url_for('remove_friend') }}" style="display: inline;">
+                            <input type="hidden" name="friend_id" value="{{ friend.id }}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" style="border-color: #ff6b6b; color: #ff6b6b;" onclick="return confirm('Remove this friend?');">
+                                <span class="material-symbols-outlined" style="font-size: 1rem;">person_remove</span>
+                            </button>
+                        </form>
+                    </div>
+                    <hr style="border-color: #f0d079;">
+                    <div style="display: flex; gap: 0.5rem;">
+                        <form method="post" action="{{ request.url_for('create_challenge') }}" style="flex: 1;">
+                            <input type="hidden" name="opponent_id" value="{{ friend.id }}">
+                            <button type="submit" class="btn btn-sm w-100" style="background-color: #ffcf47; color: #1a1d2f; font-weight: 700;">
+                                <span class="material-symbols-outlined me-1" style="font-size: 0.9rem;">sword</span>
+                                Challenge
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info" role="alert" style="border-color: #b8e0d2; background-color: #f0fffe;">
+        <span class="material-symbols-outlined me-2">info</span>
+        You don't have any friends yet. <a href="{{ request.url_for('search_users_view') }}">Search for users to add as friends!</a>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
