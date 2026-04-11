@@ -1,5 +1,6 @@
 from sqlmodel import Session, select
-from app.models.user import GameGuess, User
+from app.models.game_guess import GameGuess
+from app.models.user import User
 from datetime import date
 from typing import Optional
 import logging
