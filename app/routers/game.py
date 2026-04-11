@@ -1,10 +1,9 @@
 from fastapi import APIRouter, Request, Form
-from fastapi.templating import Jinja2Templates
 from datetime import date
+from app.routers import templates
 from app.utilities.game_utils import get_daily_puzzle, bulls_and_cows
 
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
 
 @router.get("/app")
 async def show_game(request: Request):
@@ -27,7 +26,9 @@ async def show_game(request: Request):
         "reveal_code": session.get("status") in ("won", "gaveup"),
         "error": None
     }
-    return templates.TemplateResponse("game.html", context)
+    return templates.TemplateResponse(
+        request=request, name="game.html", context=context
+    )
 
 @router.post("/app")
 async def handle_guess(
@@ -75,4 +76,6 @@ async def handle_guess(
         "reveal_code": reveal_code or session.get("status") in ("won", "gaveup"),
         "error": error,
     }
-    return templates.TemplateResponse("game.html", context)
+    return templates.TemplateResponse(
+        request=request, name="game.html", context=context
+    )
