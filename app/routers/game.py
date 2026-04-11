@@ -17,6 +17,7 @@ router = APIRouter()
 async def game_view(request: Request, user: AuthDep, db: SessionDep):
     today = date.today().strftime("%Y-%m-%d")
     repo = GameRepository(db)
+    streak_summary = repo.sync_user_streaks(user.id, today)
     guesses = repo.get_guesses_for_day(user.id, today)
     played_today = repo.has_played_today(user.id, today)
     solved = repo.has_solved_today(user.id, today)
@@ -32,6 +33,7 @@ async def game_view(request: Request, user: AuthDep, db: SessionDep):
             "solved": solved,
             "gave_up": gave_up,
             "revealed_code": revealed_code,
+            "streak_summary": streak_summary,
         },
     )
 
@@ -56,6 +58,7 @@ async def game_guess(request: Request, user: AuthDep, db: SessionDep, guess: str
     puzzle = get_daily_puzzle(today)
     bulls, cows = bulls_and_cows(puzzle, guess)
     repo.save_guess(user.id, today, guess, bulls, cows)
+    repo.sync_user_streaks(user.id, today)
 
     return RedirectResponse(url=request.url_for("game_view"), status_code=status.HTTP_302_FOUND)
 
@@ -74,6 +77,7 @@ async def game_give_up(request: Request, user: AuthDep, db: SessionDep):
             flash(request, "You already played today's puzzle. Come back tomorrow.", "info")
     else:
         repo.save_give_up(user.id, today)
+        repo.sync_user_streaks(user.id, today)
 
     return RedirectResponse(url=request.url_for("game_view"), status_code=status.HTTP_302_FOUND)
 
@@ -83,10 +87,11 @@ async def game_history(request: Request, user: AuthDep, db: SessionDep):
     repo = GameRepository(db)
     games = repo.get_all_guesses_by_day(user.id)
     stats = repo.get_player_stats(user.id)
+    streak_summary = repo.get_streak_summary(user.id)
     return templates.TemplateResponse(
         request=request,
         name="game_history.html",
-        context={"user": user, "games": games, "stats": stats},
+        context={"user": user, "games": games, "stats": stats, "streak_summary": streak_summary},
     )
 
 
@@ -95,6 +100,7 @@ async def game_leaderboard(request: Request, user: AuthDep, db: SessionDep, day:
     today = date.today().strftime("%Y-%m-%d")
     selected_day = day if day else today
     repo = GameRepository(db)
+    streak_summary = repo.sync_user_streaks(user.id, today)
     leaderboard = repo.get_leaderboard(day=selected_day)
     return templates.TemplateResponse(
         request=request,
@@ -104,5 +110,6 @@ async def game_leaderboard(request: Request, user: AuthDep, db: SessionDep, day:
             "leaderboard": leaderboard,
             "selected_day": selected_day,
             "today": today,
+            "streak_summary": streak_summary,
         },
     )
