@@ -5,42 +5,33 @@
 <!-- Floating background mascots -->
 <div id="mascot-floats"></div>
 
-<div class="center-welcome">
-    <div class="welcome-user-banner">Welcome, <b>{{ user.username }}</b>!</div>
-</div>
-
 <div class="game-main-flex">
   <!-- Left side: instructions -->
   <div class="game-left">
     <div class="instructions-box gamebox-instructions">
       <b>Guess the secret 4-digit number.</b><br>
       <span class="material-symbols-outlined" style="font-size:1rem; vertical-align:middle;">arrow_forward</span>
-      Right digit, right spot = Bull<br>
+      Right digit, right spot = Bull 🐂<br>
       <span class="material-symbols-outlined" style="font-size:1rem; vertical-align:middle;">arrow_forward</span>
-      Right digit, wrong spot = Cow<br>
+      Right digit, wrong spot = Cow 🐄<br>
       Only one puzzle a day!
     </div>
 
     <div class="mystery-code-area" style="margin:1.2em 0 0 0;">
       <div class="secret-label">Secret Code</div>
-      {% if solved %}
-        <div class="secret-code hidden">? ? ? ?</div>
+      {% if revealed_code %}
+        <div class="secret-code">{{ revealed_code | join(' ') }}</div>
       {% else %}
         <div class="secret-code hidden">? ? ? ?</div>
       {% endif %}
     </div>
 
-    <div style="margin-top: 1em;">
-        <a href="{{ request.url_for('game_leaderboard') }}">
-            <span class="material-symbols-outlined" style="vertical-align:middle; font-size:1rem;">leaderboard</span>
-            Leaderboard
-        </a>
-        &nbsp;|&nbsp;
-        <a href="{{ request.url_for('game_history') }}">
-            <span class="material-symbols-outlined" style="vertical-align:middle; font-size:1rem;">history</span>
-            My History
-        </a>
-    </div>
+    {% if not played_today %}
+    <form method="post" action="{{ request.url_for('game_give_up') }}" style="margin-top: 0.9em;">
+        <button class="start-btn" type="submit">Give Up</button>
+    </form>
+    {% endif %}
+
   </div>
 
   <!-- Right side: guess input and history -->
@@ -49,7 +40,17 @@
     {% if solved %}
         <div class="winner-box">
             <span class="material-symbols-outlined" style="font-size:2rem; vertical-align:middle;">emoji_events</span>
-            You solved today's puzzle! Come back tomorrow.
+            You already played today's puzzle and guessed correctly. Come back tomorrow.
+        </div>
+    {% elif gave_up %}
+        <div class="winner-box" style="background: #fff1f1; color: #9b2c2c; border-color: #f1a5a5;">
+            <span class="material-symbols-outlined" style="font-size:2rem; vertical-align:middle;">flag</span>
+            You already played today's puzzle and gave up. The secret code is now revealed.
+        </div>
+    {% elif played_today %}
+        <div class="winner-box" style="background: #fff6dd; color: #8a5c00; border-color: #f0c766;">
+            <span class="material-symbols-outlined" style="font-size:2rem; vertical-align:middle;">schedule</span>
+            You already played today's puzzle. Come back tomorrow for a new one.
         </div>
     {% else %}
     <div class="guess-clickpad-box">
@@ -88,9 +89,9 @@
             {% for g in guesses %}
             <tr>
                 <td>{{ loop.index }}</td>
-                <td>{{ g.guess }}</td>
-                <td>{{ g.bulls }}</td>
-                <td>{{ g.cows }}</td>
+                <td>{{ "Gave up" if g.guess == "GAVE_UP" else g.guess }}</td>
+                <td>{{ "-" if g.guess == "GAVE_UP" else g.bulls }}</td>
+                <td>{{ "-" if g.guess == "GAVE_UP" else g.cows }}</td>
                 <td>{{ g.timestamp.strftime('%H:%M:%S') }}</td>
             </tr>
             {% endfor %}

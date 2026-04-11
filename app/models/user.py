@@ -12,4 +12,5 @@ class UserBase(SQLModel,):
 
 class User(UserBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-
+    current_streak: int = Field(default=0)
+    longest_streak: int = Field(default=0)

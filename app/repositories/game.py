@@ -9,6 +9,8 @@ logger = logging.getLogger(__name__)
 
 
 class GameRepository:
+    GIVE_UP_MARKER = "GAVE_UP"
+
     def __init__(self, db: Session):
         self.db = db
 
@@ -41,6 +43,26 @@ class GameRepository:
     def has_solved_today(self, user_id: int, day: str) -> bool:
         guesses = self.get_guesses_for_day(user_id, day)
         return any(g.bulls == 4 for g in guesses)
+
+    def has_played_today(self, user_id: int, day: str) -> bool:
+        guesses = self.get_guesses_for_day(user_id, day)
+        return len(guesses) > 0
+
+    def has_given_up_today(self, user_id: int, day: str) -> bool:
+        guesses = self.get_guesses_for_day(user_id, day)
+        return any(g.guess == self.GIVE_UP_MARKER for g in guesses)
+
+    def has_completed_today(self, user_id: int, day: str) -> bool:
+        return self.has_solved_today(user_id, day) or self.has_given_up_today(user_id, day)
+
+    def save_give_up(self, user_id: int, day: str) -> GameGuess:
+        return self.save_guess(
+            user_id=user_id,
+            day=day,
+            guess=self.GIVE_UP_MARKER,
+            bulls=-1,
+            cows=-1,
+        )
 
     def get_all_guesses_by_day(self, user_id: int) -> dict[str, list[GameGuess]]:
         stmt = (
@@ -112,6 +134,11 @@ class GameRepository:
 
         for g in all_guesses:
             days_played.add(g.day)
+            day_solved.setdefault(g.day, False)
+
+            if g.guess == self.GIVE_UP_MARKER:
+                continue
+
             day_guess_count.setdefault(g.day, 0)
             if not day_solved.get(g.day):
                 day_guess_count[g.day] += 1

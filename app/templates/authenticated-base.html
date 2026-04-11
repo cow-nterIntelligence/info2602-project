@@ -5,7 +5,8 @@
 <style>
     body {
         overflow-x: hidden;
-        background-color: #f8f9fa;
+        background: radial-gradient(circle at top left, #fff9df 0%, #ffe4a8 35%, #fff4db 100%);
+        color: #2a2a2a;
     }
 
     #wrapper {
@@ -17,8 +18,9 @@
         max-width: 250px;
         min-height: 100vh;
         transition: all 0.3s;
-        background: #1b263b;
+        background: linear-gradient(180deg, #2c2f45 0%, #1d2436 100%);
         color: #fff;
+        border-right: 4px solid #ffcf47;
     }
 
     #sidebar.collapsed {
@@ -26,15 +28,21 @@
     }
 
     #sidebar .nav-link {
-        color: #adb5bd;
-        font-weight: 500;
+        color: #f8e4ab;
+        font-weight: 600;
+        background: rgba(255, 203, 71, 0.12);
+        border-radius: 0.9rem;
     }
 
-    #sidebar .nav-link:hover,
+    #sidebar .nav-link:hover {
+        color: #1b1b1b;
+        background-color: #ffe17c;
+    }
+
     #sidebar .nav-link.active {
-        color: #fff;
-        background-color: #415a77;
-        border-radius: 0.5rem;
+        color: #1b1b1b;
+        background-color: #ffcf47;
+        box-shadow: 0 12px 24px rgba(255, 207, 71, 0.18);
     }
 
     #content {
@@ -43,7 +51,7 @@
         transition: all 0.3s;
         display: flex;
         flex-direction: column;
-        background-color: #f8f9fa;
+        background: linear-gradient(180deg, rgba(255,248,229,0.95) 0%, rgba(255,244,209,0.92) 100%);
     }
 
     .card {
@@ -52,11 +60,47 @@
     }
 
     .summary-card {
-        border-left: 5px solid #0d6efd;
+        border-left: 5px solid #ffcf47;
     }
 
-    .navbar {
-        border-bottom: 1px solid #dee2e6;
+    #sidebar h4 {
+        font-family: 'Fredoka One', cursive;
+        color: #ffdc58;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    .nav-link.text-danger {
+        color: #ffa42b !important;
+    }
+
+    .nav-link.text-danger:hover {
+        color: #1b1b1b !important;
+        background-color: #ffe48f !important;
+    }
+
+    .page-welcome {
+        margin-bottom: 1rem;
+        padding: 1rem 1.25rem;
+        border-radius: 1rem;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 245, 204, 0.98) 100%);
+        border: 2px solid #f4d98e;
+        box-shadow: 0 10px 24px rgba(144, 104, 0, 0.08);
+    }
+
+    .page-welcome-label {
+        color: #9b6a00;
+        font-size: 0.9rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+
+    .page-welcome-name {
+        color: #2c2f45;
+        font-size: 1.6rem;
+        font-weight: 700;
+        line-height: 1.2;
     }
 </style>
 
@@ -69,15 +113,9 @@
 <div id="wrapper">
 
     <nav id="sidebar" class="p-3 d-flex flex-column vh-100">
-        <h4 class="text-white mb-4 text-center py-4">Project Template</h4>
+        <h4 class="text-white mb-4 text-center py-4">Bulls & Cows</h4>
 
         <ul class="nav nav-pills flex-column gap-2 flex-grow-1">
-            <li class="nav-item">
-                <a class="nav-link d-flex align-items-center {{ 'active' if request.path == '/app' }}" href="/app">
-                    <span class="material-symbols-outlined me-2">people</span>
-                    Users
-                </a>
-            </li>
             <li class="nav-item">
                 <a class="nav-link d-flex align-items-center {{ 'active' if request.path == '/game/' }}" href="/game/">
                     <span class="material-symbols-outlined me-2">casino</span>
@@ -108,16 +146,11 @@
     </nav>
 
     <div id="content">
-        <nav class="navbar navbar-expand-lg bg-white mb-4 px-3 rounded-3 shadow-sm">
-            <button class="btn btn-outline-secondary" id="menu-toggle">
-                <span class="material-symbols-outlined md-dark">menu</span>
-            </button>
+        <div class="page-welcome">
+            <div class="page-welcome-label">Welcome</div>
+            <div class="page-welcome-name">{{ user.username }}</div>
+        </div>
 
-            <div class="ms-auto d-flex align-items-center gap-3">
-                <span class="fw-semibold">Welcome, {{user.username}}</span>
-            </div>
-        </nav>
-        
         <div class="row">
             <div class="col-12">
                 {% for message in get_flashed_messages(request) %}
@@ -133,13 +166,6 @@
 
 
 </div>
-
-
-<script>
-    document.getElementById("menu-toggle").addEventListener("click", function () {
-        document.getElementById("sidebar").classList.toggle("collapsed");
-    });
-</script>
 
 {% block subpage_scripts %}{% endblock %}
 
