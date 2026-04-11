@@ -155,6 +155,21 @@
                     Leaderboard
                 </a>
             </li>
+
+            <li class="nav-item">
+                <a class="nav-link d-flex align-items-center {{ 'active' if '/friends' in request.path or '/search-users' in request.path }}" href="/friends">
+                    <span class="material-symbols-outlined me-2">people</span>
+                    Friends
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link d-flex align-items-center {{ 'active' if '/challenges' in request.path or '/challenge/' in request.path }}" href="/challenges">
+                    <span class="material-symbols-outlined me-2">sword</span>
+                    Challenges
+                </a>
+            </li>
+
             <li class="nav-item mt-auto">
                 <a class="nav-link d-flex align-items-center text-danger" href="/logout">
                     <span class="material-symbols-outlined me-2">logout</span>
