@@ -6,6 +6,7 @@ from datetime import date
 from app.dependencies.auth import AuthDep
 from app.dependencies.session import SessionDep
 from app.repositories.game import GameRepository
+from app.repositories.challenge import ChallengeRepository
 from app.utilities.game_utils import get_daily_puzzle, bulls_and_cows
 from app.utilities.flash import flash
 from app.routers import templates
@@ -42,6 +43,7 @@ async def game_view(request: Request, user: AuthDep, db: SessionDep):
 async def game_guess(request: Request, user: AuthDep, db: SessionDep, guess: str = Form(...)):
     today = date.today().strftime("%Y-%m-%d")
     repo = GameRepository(db)
+    challenge_repo = ChallengeRepository(db)
 
     if repo.has_played_today(user.id, today):
         if repo.has_solved_today(user.id, today):
@@ -60,6 +62,19 @@ async def game_guess(request: Request, user: AuthDep, db: SessionDep, guess: str
     repo.save_guess(user.id, today, guess, bulls, cows)
     repo.sync_user_streaks(user.id, today)
 
+    # Update challenge results if the user solved the puzzle
+    if bulls == 4:
+        challenges = challenge_repo.get_challenges_for_day(user.id, today)
+        for challenge in challenges:
+            if challenge.status in ["pending", "accepted"]:
+                guesses = repo.get_guesses_for_day(user.id, today)
+                challenge_repo.update_challenge_result(
+                    challenge.id,
+                    user.id,
+                    "solved",
+                    len(guesses)
+                )
+
     return RedirectResponse(url=request.url_for("game_view"), status_code=status.HTTP_302_FOUND)
 
 
@@ -67,6 +82,7 @@ async def game_guess(request: Request, user: AuthDep, db: SessionDep, guess: str
 async def game_give_up(request: Request, user: AuthDep, db: SessionDep):
     today = date.today().strftime("%Y-%m-%d")
     repo = GameRepository(db)
+    challenge_repo = ChallengeRepository(db)
 
     if repo.has_played_today(user.id, today):
         if repo.has_solved_today(user.id, today):
@@ -78,6 +94,18 @@ async def game_give_up(request: Request, user: AuthDep, db: SessionDep):
     else:
         repo.save_give_up(user.id, today)
         repo.sync_user_streaks(user.id, today)
+        
+        # Update challenge results
+        challenges = challenge_repo.get_challenges_for_day(user.id, today)
+        for challenge in challenges:
+            if challenge.status in ["pending", "accepted"]:
+                guesses = repo.get_guesses_for_day(user.id, today)
+                challenge_repo.update_challenge_result(
+                    challenge.id,
+                    user.id,
+                    "gave_up",
+                    len(guesses)
+                )
 
     return RedirectResponse(url=request.url_for("game_view"), status_code=status.HTTP_302_FOUND)
 
