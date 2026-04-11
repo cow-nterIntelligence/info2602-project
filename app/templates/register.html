@@ -135,13 +135,11 @@
             <span>Join the Herd! Make an account to play Bulls & Cows and track your wins.</span>
         </div>
         <!-- FLASH MESSAGES -->
-        {% if request.session.get('messages') %}
-          {% for message, category in request.session['messages'] %}
-            <div class="flash {{ category }}">
-              {{ message }}
-            </div>
-          {% endfor %}
-        {% endif %}
+        {% for message in get_flashed_messages(request) %}
+        <div class="flash {{ message.type }}">
+          {{ message.message }}
+        </div>
+        {% endfor %}
         <!-- REGISTER FORM -->
         <form method="post" action="{{ request.url_for('signup_user') }}">
             <input autocomplete="username" required type="text" name="username" placeholder="Choose a nickname">

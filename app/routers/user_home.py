@@ -12,10 +12,7 @@ async def user_home_view(
     user: AuthDep,
     db:SessionDep
 ):
-    return templates.TemplateResponse(
-        request=request, 
-        name="game.html",
-        context={
-            "user": user
-        }
+    return RedirectResponse(
+        url=request.url_for("game_view"),
+        status_code=status.HTTP_302_FOUND,
     )
