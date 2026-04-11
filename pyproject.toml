@@ -13,7 +13,7 @@ authors = [
 ]
 dependencies = [
     "asyncpg",
-    "fastapi[all]",
+    "fastapi[standard,all]",
     "httpx",
     "itsdangerous",
     "jinja2",

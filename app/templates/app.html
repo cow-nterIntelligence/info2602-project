@@ -1,30 +1,23 @@
-{% extends "authenticated-base.html" %}
+{% extends "base.html" %}
+{% block title %}Play | Bulls & Cows{% endblock %}
 
-{% block external_js %}
-<script src="{{ url_for('static', path='js/app.js')}}"></script>
-{% endblock %}
-
-
-{% block subpage_content %}
-
-    <div class="container" id="content">
-        <div class="row">
-            <p>
-                This is table is rendered on the Client. JavaScript code requests the data from <a href="/api/users">/api/users</a> and writes it to this page.
-            </p>
-        </div>
-        <div class="row">
-            <table class="table table-striped">
-                <thead>
-                  <tr>
-                    <th>Id</th><th>Username</th>
-                  </tr>
-                </thead>
-                <tbody id="result">
-                
-                <tbody>
-            </table>
-        </div>
+{% block body %}
+<div class="game-arena">
+    <div class="center-banner">
+      <span class="main-mascots">🐂&🐄</span>
+      <div class="main-banner-text">Ready to Play?</div>
     </div>
-
+    <div class="instructions-card">
+      <div>
+        <b>Instructions:</b><br>
+        Guess the secret <b>4-digit number</b>.<br>
+        <span>🐂</span> = right digit, right spot<br>
+        <span>🐄</span> = right digit, wrong spot<br>
+        Only one puzzle a day. Good luck, codebreaker!
+      </div>
+    </div>
+    <form class="game-start-form" method="POST" action="/start">
+      <button class="start-btn" type="submit">Start Game 🎲</button>
+    </form>
+</div>
 {% endblock %}
