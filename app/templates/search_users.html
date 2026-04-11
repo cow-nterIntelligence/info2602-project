@@ -1,0 +1,79 @@
+{% extends "authenticated-base.html" %}
+
+{% block subpage_content %}
+
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 style="color: #2c2f45; font-weight: 700;">Search Users</h2>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <form method="get" action="{{ request.url_for('search_users_view') }}" class="mb-4">
+                <div class="input-group" style="border-radius: 1rem; overflow: hidden; box-shadow: 0 4px 12px rgba(144, 104, 0, 0.1);">
+                    <input 
+                        type="text" 
+                        name="q" 
+                        class="form-control" 
+                        placeholder="Search by username..." 
+                        value="{{ query }}"
+                        style="border: none; padding: 0.75rem 1rem; font-size: 1rem;"
+                    >
+                    <button type="submit" class="btn" style="background-color: #ffcf47; border: none; color: #1a1d2f; font-weight: 700; padding: 0.75rem 1.5rem;">
+                        <span class="material-symbols-outlined">search</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-4">
+            <a href="{{ request.url_for('friends_view') }}" class="btn btn-outline-secondary w-100" style="border-color: #2c2f45; color: #2c2f45; font-weight: 700; padding: 0.75rem;">
+                <span class="material-symbols-outlined me-2">arrow_back</span>
+                Back to Friends
+            </a>
+        </div>
+    </div>
+
+    {% if search_results %}
+    <div class="row">
+        {% for user in search_results %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card" style="border: 2px solid #f0d079; box-shadow: 0 4px 12px rgba(144, 104, 0, 0.1);">
+                <div class="card-body">
+                    <h5 class="card-title" style="color: #2c2f45; font-weight: 700;">{{ user.username }}</h5>
+                    <p class="card-text text-muted" style="font-size: 0.9rem;">{{ user.email }}</p>
+                    <hr style="border-color: #f0d079;">
+                    {% if user.is_friend %}
+                    <button class="btn btn-sm w-100" style="background-color: #d0d0d0; color: #666; font-weight: 700; cursor: default;">
+                        <span class="material-symbols-outlined me-1" style="font-size: 0.9rem;">done</span>
+                        Already Friends
+                    </button>
+                    {% else %}
+                    <form method="post" action="{{ request.url_for('add_friend') }}">
+                        <input type="hidden" name="friend_id" value="{{ user.id }}">
+                        <button type="submit" class="btn btn-sm w-100" style="background-color: #ffcf47; color: #1a1d2f; font-weight: 700;">
+                            <span class="material-symbols-outlined me-1" style="font-size: 0.9rem;">person_add</span>
+                            Add Friend
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% elif query %}
+    <div class="alert alert-warning" role="alert" style="border-color: #ffe08a; background-color: #fffbe6;">
+        <span class="material-symbols-outlined me-2">warning</span>
+        No users found matching "{{ query }}". Try a different search!
+    </div>
+    {% else %}
+    <div class="alert alert-info" role="alert" style="border-color: #b8e0d2; background-color: #f0fffe;">
+        <span class="material-symbols-outlined me-2">info</span>
+        Enter a username to search for users you'd like to add as friends!
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
