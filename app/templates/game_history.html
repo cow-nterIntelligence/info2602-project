@@ -1,10 +1,59 @@
-<h2>Bulls & Cows History</h2>
-{% for day, game in games.items() %}
-  <h4>{{ day }}</h4>
-  <ul>
-    {% for g in game %}
-      <li>{{ g.guess }} — Bulls: {{ g.bulls }}, Cows: {{ g.cows }} ({{ g.timestamp }})</li>
+{% extends "authenticated-base.html" %}
+
+{% block subpage_content %}
+
+<h2>My Play History</h2>
+
+<div>
+    <a href="{{ request.url_for('game_view') }}">Play Today</a>
+    &nbsp;|&nbsp;
+    <a href="{{ request.url_for('game_leaderboard') }}">Leaderboard</a>
+</div>
+
+<br>
+
+<!-- Lifetime stats summary -->
+<h4>Overall Stats</h4>
+<ul>
+    <li>Days Played: {{ stats.days_played }}</li>
+    <li>Puzzles Solved: {{ stats.days_won }}</li>
+    <li>Win Rate: {{ stats.win_rate }}%</li>
+    <li>Average Guesses to Solve: {{ stats.avg_guesses }}</li>
+    <li>Best Game (fewest guesses): {{ stats.best_game }}</li>
+</ul>
+
+<hr>
+
+<!-- Per-day breakdown -->
+{% if games %}
+    {% for day, day_guesses in games.items() %}
+        {% set solved_day = day_guesses | selectattr('bulls', 'equalto', 4) | list | length > 0 %}
+
+        <h4>
+            {{ day }}
+            {% if solved_day %}
+                <span class="material-symbols-outlined" style="color:green; font-size:1rem;">check_circle</span>
+                Solved in {{ day_guesses | length }} guess{{ 'es' if day_guesses | length != 1 }}
+            {% else %}
+                <span class="material-symbols-outlined" style="color:red; font-size:1rem;">cancel</span>
+                Not solved ({{ day_guesses | length }} guess{{ 'es' if day_guesses | length != 1 }})            {% endif %}
+        </h4>
+
+        <ul>
+        {% for g in day_guesses %}
+            <li>
+                <strong>{{ g.guess }}</strong> —
+                Bulls: {{ g.bulls }}, Cows: {{ g.cows }},
+                <em>({{ g.timestamp.strftime('%H:%M:%S') }})</em>
+                {% if g.bulls == 4 %}
+                  <span class="material-symbols-outlined" style="color:green; font-size:1rem;">check_circle</span>
+                {% endif %}
+            </li>
+        {% endfor %}
+        </ul>
     {% endfor %}
-  </ul>
-{% endfor %}
-<a href="{{ request.url_for('game_view') }}">Back to today</a>
+{% else %}
+    <p>You have not played any games yet. <a href="{{ request.url_for('game_view') }}">Play your first puzzle!</a></p>
+{% endif %}
+
+{% endblock %}

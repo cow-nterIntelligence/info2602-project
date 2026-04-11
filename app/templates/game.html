@@ -1,7 +1,6 @@
-{% extends "base.html" %}
-{% block title %}Game | Bulls & Cows{% endblock %}
+{% extends "authenticated-base.html" %}
 
-{% block body %}
+{% block subpage_content %}
 
 <!-- Floating background mascots -->
 <div id="mascot-floats"></div>
@@ -11,35 +10,50 @@
 </div>
 
 <div class="game-main-flex">
-  <!-- Left side: instructions and secret code -->
+  <!-- Left side: instructions -->
   <div class="game-left">
     <div class="instructions-box gamebox-instructions">
       <b>Guess the secret 4-digit number.</b><br>
-      🐂 = right digit, right spot.<br>
-      🐄 = right digit, wrong spot.<br>
+      <span class="material-symbols-outlined" style="font-size:1rem; vertical-align:middle;">arrow_forward</span>
+      Right digit, right spot = Bull<br>
+      <span class="material-symbols-outlined" style="font-size:1rem; vertical-align:middle;">arrow_forward</span>
+      Right digit, wrong spot = Cow<br>
       Only one puzzle a day!
     </div>
+
     <div class="mystery-code-area" style="margin:1.2em 0 0 0;">
       <div class="secret-label">Secret Code</div>
-      {% if reveal_code %}
-        <div class="secret-code reveal">{{ puzzle }}</div>
+      {% if solved %}
+        <div class="secret-code hidden">? ? ? ?</div>
       {% else %}
         <div class="secret-code hidden">? ? ? ?</div>
       {% endif %}
-      {% if status != "won" and not reveal_code %}
-        <form method="post" action="/game/app" style="margin:0;" class="giveup-form">
-          <input type="hidden" name="action" value="giveup">
-          <button type="submit" class="giveup-btn">Give Up</button>
-        </form>
-      {% endif %}
+    </div>
+
+    <div style="margin-top: 1em;">
+        <a href="{{ request.url_for('game_leaderboard') }}">
+            <span class="material-symbols-outlined" style="vertical-align:middle; font-size:1rem;">leaderboard</span>
+            Leaderboard
+        </a>
+        &nbsp;|&nbsp;
+        <a href="{{ request.url_for('game_history') }}">
+            <span class="material-symbols-outlined" style="vertical-align:middle; font-size:1rem;">history</span>
+            My History
+        </a>
     </div>
   </div>
 
-  <!-- Right side: guess area and history -->
+  <!-- Right side: guess input and history -->
   <div class="game-right">
-    {% if status != "won" and not reveal_code %}
+
+    {% if solved %}
+        <div class="winner-box">
+            <span class="material-symbols-outlined" style="font-size:2rem; vertical-align:middle;">emoji_events</span>
+            You solved today's puzzle! Come back tomorrow.
+        </div>
+    {% else %}
     <div class="guess-clickpad-box">
-        <div id="guess-warning" class="guess-warning">{% if error %}{{ error }}{% endif %}</div>
+        <div id="guess-warning" class="guess-warning"></div>
         <div class="guess-preview">
             <span id="guess-preview-digits">_ _ _ _</span>
         </div>
@@ -52,39 +66,40 @@
             <button type="button" class="pad-btn pad-back" onclick="removeDigit()">&larr;</button>
             <button type="button" class="pad-btn pad-clear" onclick="clearGuess()">C</button>
         </div>
-        <form method="post" action="/game/app" id="guess-form-js" class="guess-form-inline" onsubmit="return submitGuess();">
+        <form method="post" action="{{ request.url_for('game_guess') }}" id="guess-form-js" class="guess-form-inline" onsubmit="return submitGuess();">
             <input type="hidden" name="guess" id="guess-input-hidden">
             <button class="start-btn guess-btn" type="submit" id="submit-guess-btn" disabled>Guess</button>
         </form>
     </div>
-    {% elif status == "won" %}
-        <div class="winner-box">🎉 You WON! The code was <b>{{ guesses[-1].guess }}</b></div>
-    {% elif reveal_code %}
-        <div class="reveal-box">
-          <span style="font-size:1.2em; color: #d04610;">You gave up! The code was:</span><br>
-          <span style="font-size:2em; color:#b85a00; font-family:'Fredoka One',monospace;">{{ puzzle }}</span>
-        </div>
     {% endif %}
 
+    <!-- Guess history table -->
     <div class="guess-history-box" style="margin-top:2em;">
-        <h3>Your Guesses</h3>
+        <h3>Your Guesses Today</h3>
+        {% if guesses %}
         <table class="guess-table">
             <tr>
                 <th>#</th>
                 <th>Guess</th>
                 <th>Bulls</th>
                 <th>Cows</th>
+                <th>Time</th>
             </tr>
-            {% for entry in guesses %}
+            {% for g in guesses %}
             <tr>
                 <td>{{ loop.index }}</td>
-                <td>{{ entry.guess }}</td>
-                <td>{{ entry.bulls }}</td>
-                <td>{{ entry.cows }}</td>
+                <td>{{ g.guess }}</td>
+                <td>{{ g.bulls }}</td>
+                <td>{{ g.cows }}</td>
+                <td>{{ g.timestamp.strftime('%H:%M:%S') }}</td>
             </tr>
             {% endfor %}
         </table>
+        {% else %}
+            <p>No guesses yet. Use the pad above to start!</p>
+        {% endif %}
     </div>
+
   </div>
 </div>
 
@@ -132,7 +147,7 @@ function submitGuess() {
 document.addEventListener('DOMContentLoaded', updatePreview);
 </script>
 
-<!-- Bouncing mascots HERD! -->
+<!-- Bouncing mascots -->
 <script>
 document.addEventListener("DOMContentLoaded", function() {
   const herd = [
