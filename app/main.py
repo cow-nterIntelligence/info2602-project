@@ -5,7 +5,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from app.routers import templates, static_files, router, api_router
 from app.config import get_settings
 from contextlib import asynccontextmanager
-from app.routers import game
+from app.routers import game, friends, challenges
 from fastapi.staticfiles import StaticFiles
 
 
@@ -24,6 +24,8 @@ app = FastAPI(middleware=[
 )   
 
 app.include_router(game.router, prefix="/game")
+app.include_router(friends.router)
+app.include_router(challenges.router)
 
 app.include_router(router)
 app.include_router(api_router)
