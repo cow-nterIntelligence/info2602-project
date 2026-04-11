@@ -102,6 +102,25 @@
         font-weight: 700;
         line-height: 1.2;
     }
+
+    .page-welcome-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.65rem;
+        margin-top: 0.7rem;
+    }
+
+    .page-welcome-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.45rem 0.75rem;
+        border-radius: 999px;
+        background: #fff7d7;
+        border: 1px solid #f0d079;
+        color: #7a5200;
+        font-weight: 700;
+    }
 </style>
 
 {% block additional_styles %}{% endblock %}
@@ -149,6 +168,20 @@
         <div class="page-welcome">
             <div class="page-welcome-label">Welcome</div>
             <div class="page-welcome-name">{{ user.username }}</div>
+            {% if streak_summary is defined %}
+            <div class="page-welcome-meta">
+                <div class="page-welcome-pill">
+                    <span class="material-symbols-outlined" style="font-size:1rem;">local_fire_department</span>
+                    {{ streak_summary.current_streak }} day streak
+                </div>
+                {% if streak_summary.badge %}
+                <div class="page-welcome-pill">
+                    <span class="material-symbols-outlined" style="font-size:1rem;">{{ streak_summary.badge.icon }}</span>
+                    {{ streak_summary.badge.name }}
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
         </div>
 
         <div class="row">

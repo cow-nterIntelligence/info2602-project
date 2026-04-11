@@ -20,7 +20,7 @@
 
     .history-stats {
         display: grid;
-        grid-template-columns: repeat(5, minmax(0, 1fr));
+        grid-template-columns: repeat(6, minmax(0, 1fr));
         gap: 1rem;
     }
 
@@ -252,10 +252,6 @@
 
     <section class="history-stats">
         <article class="history-stat-card">
-            <div class="history-stat-label">Days Played</div>
-            <div class="history-stat-value">{{ stats.days_played }}</div>
-        </article>
-        <article class="history-stat-card">
             <div class="history-stat-label">Puzzles Solved</div>
             <div class="history-stat-value">{{ stats.days_won }}</div>
         </article>
@@ -270,6 +266,20 @@
         <article class="history-stat-card">
             <div class="history-stat-label">Best Game</div>
             <div class="history-stat-value">{{ stats.best_game }}</div>
+        </article>
+        <article class="history-stat-card">
+            <div class="history-stat-label">Current Streak</div>
+            <div class="history-stat-value">{{ stats.current_streak }}</div>
+        </article>
+        <article class="history-stat-card">
+            <div class="history-stat-label">Longest Streak</div>
+            <div class="history-stat-value">{{ stats.longest_streak }}</div>
+            {% if stats.badge %}
+            <div class="history-guess-note" style="margin-top: 0.4rem;">
+                <span class="material-symbols-outlined" style="font-size:1rem; vertical-align:middle;">{{ stats.badge.icon }}</span>
+                {{ stats.badge.name }}
+            </div>
+            {% endif %}
         </article>
     </section>
 

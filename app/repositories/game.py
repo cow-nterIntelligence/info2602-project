@@ -1,7 +1,7 @@
 from sqlmodel import Session, select
 from app.models.game_guess import GameGuess
 from app.models.user import User
-from datetime import date
+from datetime import date, datetime, timedelta
 from typing import Optional
 import logging
 
@@ -118,6 +118,83 @@ class GameRepository:
             })
         return leaderboard
 
+    def get_streak_badge(self, longest_streak: int) -> Optional[dict]:
+        if longest_streak >= 14:
+            return {"name": "Crown Of The Herd", "icon": "workspace_premium"}
+        if longest_streak >= 7:
+            return {"name": "Golden Bull", "icon": "military_tech"}
+        if longest_streak >= 3:
+            return {"name": "Hot Streak", "icon": "local_fire_department"}
+        if longest_streak >= 1:
+            return {"name": "First Win", "icon": "verified"}
+        return None
+
+    def get_streak_summary(self, user_id: int, today: Optional[str] = None) -> dict:
+        if today is None:
+            today = date.today().strftime("%Y-%m-%d")
+
+        today_date = datetime.strptime(today, "%Y-%m-%d").date()
+        stmt = (
+            select(GameGuess)
+            .where(GameGuess.user_id == user_id)
+            .order_by(GameGuess.day, GameGuess.timestamp)
+        )
+        guesses = self.db.exec(stmt).all()
+
+        solved_days = sorted({
+            datetime.strptime(g.day, "%Y-%m-%d").date()
+            for g in guesses
+            if g.bulls == 4
+        })
+        played_today = any(g.day == today for g in guesses)
+        solved_today = any(g.day == today and g.bulls == 4 for g in guesses)
+
+        longest_streak = 0
+        running_streak = 0
+        previous_day = None
+        for solved_day in solved_days:
+            if previous_day and solved_day == previous_day + timedelta(days=1):
+                running_streak += 1
+            else:
+                running_streak = 1
+            longest_streak = max(longest_streak, running_streak)
+            previous_day = solved_day
+
+        current_streak = 0
+        if solved_days:
+            latest_solved = solved_days[-1]
+            if played_today and not solved_today:
+                current_streak = 0
+            elif latest_solved >= today_date - timedelta(days=1):
+                current_streak = 1
+                cursor = latest_solved
+                solved_set = set(solved_days)
+                while cursor - timedelta(days=1) in solved_set:
+                    current_streak += 1
+                    cursor -= timedelta(days=1)
+
+        last_solved_day = solved_days[-1].strftime("%Y-%m-%d") if solved_days else None
+        return {
+            "current_streak": current_streak,
+            "longest_streak": longest_streak,
+            "last_solved_day": last_solved_day,
+            "badge": self.get_streak_badge(longest_streak),
+        }
+
+    def sync_user_streaks(self, user_id: int, today: Optional[str] = None) -> dict:
+        summary = self.get_streak_summary(user_id=user_id, today=today)
+        user = self.db.get(User, user_id)
+        if user and (
+            user.current_streak != summary["current_streak"]
+            or user.longest_streak != summary["longest_streak"]
+        ):
+            user.current_streak = summary["current_streak"]
+            user.longest_streak = summary["longest_streak"]
+            self.db.add(user)
+            self.db.commit()
+            self.db.refresh(user)
+        return summary
+
     def get_player_stats(self, user_id: int) -> dict:
         stmt = (
             select(GameGuess)
@@ -150,10 +227,16 @@ class GameRepository:
         avg_guesses = round(sum(guesses_per_win) / len(guesses_per_win), 2) if guesses_per_win else 0
         best_game = min(guesses_per_win) if guesses_per_win else 0
 
+        streak_summary = self.sync_user_streaks(user_id)
+
         return {
             "days_played": len(days_played),
             "days_won": len(days_won),
             "win_rate": round(len(days_won) / len(days_played) * 100, 1) if days_played else 0,
             "avg_guesses": avg_guesses,
             "best_game": best_game,
+            "current_streak": streak_summary["current_streak"],
+            "longest_streak": streak_summary["longest_streak"],
+            "last_solved_day": streak_summary["last_solved_day"],
+            "badge": streak_summary["badge"],
         }
