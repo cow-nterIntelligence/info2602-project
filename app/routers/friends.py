@@ -40,15 +40,21 @@ async def search_users_view(request: Request, user: AuthDep, db: SessionDep, q: 
     
     search_results = []
     if q:
-        search_results, _ = user_repo.search_users(q, page=1, limit=10)
-        
-        search_results = [u for u in search_results if u.id != user.id]
-    
-    # see who are already friends
-    friend_ids = friend_repo.get_friend_ids(user.id)
-    for result in search_results:
-        result.is_friend = result.id in friend_ids
-    
+        results, _ = user_repo.search_users(q, page=1, limit=10)
+        results = [u for u in results if u.id != user.id]
+        friend_ids = friend_repo.get_friend_ids(user.id)
+        search_results = [
+            {
+                "id": u.id,
+                "username": u.username,
+                "email": u.email,
+                "is_friend": u.id in friend_ids,
+            }
+            for u in results
+        ]
+    else:
+        friend_ids = friend_repo.get_friend_ids(user.id)
+
     return templates.TemplateResponse(
         request=request,
         name="search_users.html",
@@ -84,7 +90,7 @@ async def add_friend(request: Request, user: AuthDep, db: SessionDep, friend_id:
     except Exception as e:
         flash(request, f"Error adding friend: {str(e)}", "error")
     
-    return RedirectResponse(url=request.url_for("search_users_view", q=""), status_code=status.HTTP_302_FOUND)
+    return RedirectResponse(url=request.url_for("search_users_view"), status_code=status.HTTP_302_FOUND)
 
 
 @router.post("/friend/remove", name="remove_friend")
