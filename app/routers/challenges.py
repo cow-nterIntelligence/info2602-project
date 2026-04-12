@@ -23,10 +23,10 @@ async def challenges_view(request: Request, user: AuthDep, db: SessionDep):
     today = date.today().strftime("%Y-%m-%d")
     
     # Get active and completed challenges
-    active_challenges = challenge_repo.get_active_challenges_for_user(user.id)
-    pending_challenges = challenge_repo.get_pending_challenges_for_user(user.id)
+    all_active = challenge_repo.get_active_challenges_for_user(user.id)
+    pending_challenges_raw = challenge_repo.get_pending_challenges_for_user(user.id)
     completed_challenges = challenge_repo.get_completed_challenges_for_user(user.id)
-    
+
     # Enrich challenges with user information
     def enrich_challenge(challenge):
         if challenge.challenger_id == user.id:
@@ -38,11 +38,47 @@ async def challenges_view(request: Request, user: AuthDep, db: SessionDep):
             "opponent": opponent,
             "is_challenger": challenge.challenger_id == user.id
         }
-    
-    pending = [enrich_challenge(c) for c in pending_challenges]
-    active = [enrich_challenge(c) for c in active_challenges if c.id not in [p["challenge"].id for p in pending]]
+
+    # Pending = challenges not yet accepted (show for BOTH sides with appropriate messages)
+    # get_pending_challenges_for_user only returns ones where user is the opponent,
+    # so we also check the full active list for ones where status == "pending" and user is challenger.
+    pending_ids = set()
+    pending = []
+    for c in all_active:
+        if c.status == "pending":
+            pending.append(enrich_challenge(c))
+            pending_ids.add(c.id)
+
+    # Active = accepted challenges where the CURRENT USER has not yet submitted a result
+    active = []
+    for c in all_active:
+        if c.id in pending_ids:
+            continue  # already in pending
+        if c.status != "accepted":
+            continue
+        # Check if current user has already played
+        if c.challenger_id == user.id and c.challenger_result is not None:
+            continue  # user already submitted; wait for other side (not "in progress")
+        if c.opponent_id == user.id and c.opponent_result is not None:
+            continue
+        active.append(enrich_challenge(c))
+
+    # Waiting = accepted, current user played but opponent hasn't (show separately in active as "waiting")
+    waiting = []
+    for c in all_active:
+        if c.id in pending_ids or c.status != "accepted":
+            continue
+        user_done = (
+            (c.challenger_id == user.id and c.challenger_result is not None) or
+            (c.opponent_id == user.id and c.opponent_result is not None)
+        )
+        if user_done:
+            enriched = enrich_challenge(c)
+            enriched["waiting_for_opponent"] = True
+            waiting.append(enriched)
+
     completed = [enrich_challenge(c) for c in completed_challenges]
-    
+
     return templates.TemplateResponse(
         request=request,
         name="challenges.html",
@@ -50,6 +86,7 @@ async def challenges_view(request: Request, user: AuthDep, db: SessionDep):
             "user": user,
             "pending_challenges": pending,
             "active_challenges": active,
+            "waiting_challenges": waiting,
             "completed_challenges": completed,
             "today": today,
         },
