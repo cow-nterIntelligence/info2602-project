@@ -1,0 +1,128 @@
+{% extends "authenticated-base.html" %}
+
+{% block subpage_content %}
+
+<div class="container-fluid mt-4">
+    <h2 style="color: #2c2f45; font-weight: 700; margin-bottom: 2rem;">Challenges</h2>
+
+    <!-- Pending Challenges Section -->
+    {% if pending_challenges %}
+    <div class="mb-5">
+        <h4 style="color: #2c2f45; font-weight: 700; margin-bottom: 1.5rem;">
+            <span class="material-symbols-outlined me-2" style="font-size: 1.5rem;">schedule</span>
+            Pending Challenges
+        </h4>
+        <div class="row">
+            {% for item in pending_challenges %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card" style="border: 2px solid #f0d079; box-shadow: 0 4px 12px rgba(255, 207, 71, 0.15);">
+                    <div class="card-body">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <h5 class="card-title" style="color: #2c2f45; font-weight: 700; margin: 0;">{{ item.opponent.username }}</h5>
+                            <span class="badge" style="background-color: #ffe4a8; color: #8a5c00; font-weight: 700;">Pending</span>
+                        </div>
+                        <p class="card-text text-muted" style="font-size: 0.85rem; margin-top: 0.5rem;">
+                            {% if item.is_challenger %}
+                            Waiting for {{ item.opponent.username }} to accept
+                            {% else %}
+                            {{ item.challenge.challenger_id | string }} challenged you
+                            {% endif %}
+                        </p>
+                        <hr style="border-color: #f0d079;">
+                        <div style="display: flex; gap: 0.5rem;">
+                            {% if not item.is_challenger %}
+                            <button class="btn btn-sm flex-grow-1" style="background-color: #ffcf47; color: #1a1d2f; font-weight: 700;" onclick="document.getElementById('accept-{{ item.challenge.id }}').submit();">
+                                <span class="material-symbols-outlined" style="font-size: 0.9rem;">done</span>
+                                Accept
+                            </button>
+                            <form id="accept-{{ item.challenge.id }}" method="post" action="{{ request.url_for('accept_challenge', challenge_id=item.challenge.id) }}" style="display: none;"></form>
+                            <button class="btn btn-sm flex-grow-1" style="background-color: #f3f3f3; color: #666; font-weight: 700;" onclick="document.getElementById('decline-{{ item.challenge.id }}').submit();">
+                                <span class="material-symbols-outlined" style="font-size: 0.9rem;">close</span>
+                                Decline
+                            </button>
+                            <form id="decline-{{ item.challenge.id }}" method="post" action="{{ request.url_for('decline_challenge', challenge_id=item.challenge.id) }}" style="display: none;"></form>
+                            {% else %}
+                            <a href="{{ request.url_for('challenge_detail_view', challenge_id=item.challenge.id) }}" class="btn btn-sm w-100" style="background-color: #b8e0d2; color: #2c2f45; font-weight: 700;">
+                                <span class="material-symbols-outlined" style="font-size: 0.9rem;">visibility</span>
+                                View
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Active Challenges Section -->
+    {% if active_challenges %}
+    <div class="mb-5">
+        <h4 style="color: #2c2f45; font-weight: 700; margin-bottom: 1.5rem;">
+            <span class="material-symbols-outlined me-2" style="font-size: 1.5rem;">local_fire_department</span>
+            Active Challenges
+        </h4>
+        <div class="row">
+            {% for item in active_challenges %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card" style="border: 2px solid #ffcf47; box-shadow: 0 4px 12px rgba(255, 207, 71, 0.2);">
+                    <div class="card-body">
+                        <h5 class="card-title" style="color: #2c2f45; font-weight: 700;">{{ item.opponent.username }}</h5>
+                        <p class="card-text text-muted" style="font-size: 0.85rem;">
+                            <span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: middle;">calendar_today</span>
+                            {{ item.challenge.day }}
+                        </p>
+                        <hr style="border-color: #ffcf47;">
+                        <a href="{{ request.url_for('challenge_detail_view', challenge_id=item.challenge.id) }}" class="btn btn-sm w-100" style="background-color: #ffcf47; color: #1a1d2f; font-weight: 700;">
+                            <span class="material-symbols-outlined me-1" style="font-size: 0.9rem;">visibility</span>
+                            View Challenge
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Completed Challenges Section -->
+    {% if completed_challenges %}
+    <div class="mb-5">
+        <h4 style="color: #2c2f45; font-weight: 700; margin-bottom: 1.5rem;">
+            <span class="material-symbols-outlined me-2" style="font-size: 1.5rem;">emoji_events</span>
+            Completed Challenges
+        </h4>
+        <div class="row">
+            {% for item in completed_challenges %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card" style="border: 2px solid #d0f0c0; box-shadow: 0 4px 12px rgba(176, 224, 192, 0.15);">
+                    <div class="card-body">
+                        <h5 class="card-title" style="color: #2c2f45; font-weight: 700;">{{ item.opponent.username }}</h5>
+                        <p class="card-text text-muted" style="font-size: 0.85rem;">
+                            <span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: middle;">calendar_today</span>
+                            {{ item.challenge.day }}
+                        </p>
+                        <hr style="border-color: #d0f0c0;">
+                        <a href="{{ request.url_for('challenge_detail_view', challenge_id=item.challenge.id) }}" class="btn btn-sm w-100" style="background-color: #b8e0d2; color: #2c2f45; font-weight: 700;">
+                            <span class="material-symbols-outlined me-1" style="font-size: 0.9rem;">visibility</span>
+                            View Results
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- No Challenges Message -->
+    {% if not pending_challenges and not active_challenges and not completed_challenges %}
+    <div class="alert alert-info" role="alert" style="border-color: #b8e0d2; background-color: #f0fffe;">
+        <span class="material-symbols-outlined me-2">info</span>
+        No challenges yet! <a href="{{ request.url_for('friends_view') }}">Add some friends and challenge them!</a>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

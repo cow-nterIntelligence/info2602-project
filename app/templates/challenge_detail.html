@@ -1,0 +1,219 @@
+{% extends "authenticated-base.html" %}
+
+{% block subpage_content %}
+
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <a href="{{ request.url_for('challenges_view') }}" class="btn btn-outline-secondary" style="border-color: #2c2f45; color: #2c2f45; font-weight: 700;">
+                <span class="material-symbols-outlined me-2">arrow_back</span>
+                Back to Challenges
+            </a>
+        </div>
+    </div>
+
+    <!-- Challenge Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card" style="border: 2px solid #ffcf47; background: linear-gradient(135deg, rgba(255, 207, 71, 0.05) 0%, rgba(255, 245, 204, 0.1) 100%); box-shadow: 0 8px 16px rgba(255, 207, 71, 0.12);">
+                <div class="card-body py-4">
+                    <div style="text-align: center;">
+                        <h3 style="color: #2c2f45; font-weight: 700; margin-bottom: 0.5rem;">
+                            <span class="material-symbols-outlined me-2" style="font-size: 2rem; vertical-align: middle;">sword</span>
+                            {{ challenger.username }} vs {{ opponent.username }}
+                        </h3>
+                        <p style="color: #8a5c00; font-weight: 700; margin: 0;">
+                            <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">calendar_today</span>
+                            {{ challenge.day }}
+                        </p>
+                        {% if challenge.status %}
+                        <p style="color: #666; margin-top: 0.5rem;">
+                            Status: <span style="text-transform: capitalize; font-weight: 700;">{{ challenge.status }}</span>
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Head to Head Record -->
+    {% if record %}
+    <div class="row mb-4">
+        <div class="col-md-6 col-lg-4 mx-auto">
+            <div class="card" style="border: 2px solid #f0d079; box-shadow: 0 4px 12px rgba(144, 104, 0, 0.1);">
+                <div class="card-body">
+                    <h6 style="color: #2c2f45; font-weight: 700; text-align: center; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.05em;">Head to Head</h6>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; text-align: center;">
+                        <div>
+                            <div style="font-size: 2rem; font-weight: 700; color: #ffcf47;">{{ record.user1_wins if record.user1_id == challenger.id else record.user2_wins }}</div>
+                            <div style="color: #8a5c00; font-weight: 700; font-size: 0.85rem;">{{ challenger.username }}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 2rem; font-weight: 700; color: #ffcf47;">{{ record.user2_wins if record.user1_id == challenger.id else record.user1_wins }}</div>
+                            <div style="color: #8a5c00; font-weight: 700; font-size: 0.85rem;">{{ opponent.username }}</div>
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin-top: 1rem; padding-top: 1rem; border-top: 2px solid #f0d079;">
+                        <small style="color: #8a5c00;">{{ record.total }} total challenges</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Game Results -->
+    <div class="row">
+        <!-- Challenger's Result -->
+        <div class="col-md-6 mb-4">
+            <div class="card" style="border: 2px solid #f0d079; box-shadow: 0 4px 12px rgba(144, 104, 0, 0.1); height: 100%;">
+                <div class="card-body">
+                    <h5 class="card-title" style="color: #2c2f45; font-weight: 700;">{{ challenger.username }}</h5>
+                    <hr style="border-color: #f0d079;">
+
+                    {% if challenger_solved %}
+                    <div class="alert alert-success" style="border-color: #b8e0d2; background-color: #f0fffe;">
+                        <span class="material-symbols-outlined me-2">done_circle</span>
+                        <strong>Solved!</strong>
+                    </div>
+                    <p><strong>Guesses:</strong> {{ challenger_guesses | length }}</p>
+                    {% elif challenger_gave_up %}
+                    <div class="alert alert-danger" style="border-color: #f1a5a5; background-color: #fff1f1;">
+                        <span class="material-symbols-outlined me-2">flag</span>
+                        <strong>Gave Up</strong>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info" style="border-color: #b8e0d2; background-color: #f0fffe;">
+                        <span class="material-symbols-outlined me-2">schedule</span>
+                        <strong>In Progress</strong>
+                    </div>
+                    {% if challenger_guesses %}
+                    <p><strong>Attempts:</strong> {{ challenger_guesses | length }}</p>
+                    {% endif %}
+                    {% endif %}
+
+                    {% if challenger_guesses %}
+                    <div style="margin-top: 1.5rem;">
+                        <h6 style="color: #2c2f45; font-weight: 700; margin-bottom: 1rem;">Guesses:</h6>
+                        <div style="max-height: 300px; overflow-y: auto;">
+                            <table class="table table-sm" style="font-size: 0.85rem;">
+                                <thead>
+                                    <tr style="background-color: #f5f5f5;">
+                                        <th>#</th>
+                                        <th>Guess</th>
+                                        <th>🐂</th>
+                                        <th>🐄</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for guess in challenger_guesses %}
+                                    <tr {% if guess.bulls == 4 %}style="background-color: #f0fffe; font-weight: 700;"{% endif %}>
+                                        <td>{{ loop.index }}</td>
+                                        <td><code>{{ guess.guess }}</code></td>
+                                        <td>{{ guess.bulls }}</td>
+                                        <td>{{ guess.cows }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Opponent's Result -->
+        <div class="col-md-6 mb-4">
+            <div class="card" style="border: 2px solid #f0d079; box-shadow: 0 4px 12px rgba(144, 104, 0, 0.1); height: 100%;">
+                <div class="card-body">
+                    <h5 class="card-title" style="color: #2c2f45; font-weight: 700;">{{ opponent.username }}</h5>
+                    <hr style="border-color: #f0d079;">
+
+                    {% if opponent_solved %}
+                    <div class="alert alert-success" style="border-color: #b8e0d2; background-color: #f0fffe;">
+                        <span class="material-symbols-outlined me-2">done_circle</span>
+                        <strong>Solved!</strong>
+                    </div>
+                    <p><strong>Guesses:</strong> {{ opponent_guesses | length }}</p>
+                    {% elif opponent_gave_up %}
+                    <div class="alert alert-danger" style="border-color: #f1a5a5; background-color: #fff1f1;">
+                        <span class="material-symbols-outlined me-2">flag</span>
+                        <strong>Gave Up</strong>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info" style="border-color: #b8e0d2; background-color: #f0fffe;">
+                        <span class="material-symbols-outlined me-2">schedule</span>
+                        <strong>In Progress</strong>
+                    </div>
+                    {% if opponent_guesses %}
+                    <p><strong>Attempts:</strong> {{ opponent_guesses | length }}</p>
+                    {% endif %}
+                    {% endif %}
+
+                    {% if opponent_guesses %}
+                    <div style="margin-top: 1.5rem;">
+                        <h6 style="color: #2c2f45; font-weight: 700; margin-bottom: 1rem;">Guesses:</h6>
+                        <div style="max-height: 300px; overflow-y: auto;">
+                            <table class="table table-sm" style="font-size: 0.85rem;">
+                                <thead>
+                                    <tr style="background-color: #f5f5f5;">
+                                        <th>#</th>
+                                        <th>Guess</th>
+                                        <th>🐂</th>
+                                        <th>🐄</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for guess in opponent_guesses %}
+                                    <tr {% if guess.bulls == 4 %}style="background-color: #f0fffe; font-weight: 700;"{% endif %}>
+                                        <td>{{ loop.index }}</td>
+                                        <td><code>{{ guess.guess }}</code></td>
+                                        <td>{{ guess.bulls }}</td>
+                                        <td>{{ guess.cows }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Winner Section -->
+    {% if winner %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card" style="border: 2px solid #ffcf47; background: linear-gradient(135deg, rgba(255, 207, 71, 0.1) 0%, rgba(255, 245, 204, 0.15) 100%); box-shadow: 0 8px 16px rgba(255, 207, 71, 0.15);">
+                <div class="card-body py-4" style="text-align: center;">
+                    {% if winner == 'tie' %}
+                    <h4 style="color: #2c2f45; font-weight: 700; margin-bottom: 0.5rem;">
+                        <span class="material-symbols-outlined me-2" style="font-size: 2rem; vertical-align: middle;">handshake</span>
+                        It's a Tie!
+                    </h4>
+                    <p style="color: #8a5c00;">Both players matched the puzzle solve!</p>
+                    {% elif winner == 'challenger' %}
+                    <h4 style="color: #2c2f45; font-weight: 700; margin-bottom: 0.5rem;">
+                        <span class="material-symbols-outlined me-2" style="font-size: 2rem;">emoji_events</span>
+                        {{ challenger.username }} Wins!
+                    </h4>
+                    <p style="color: #8a5c00;">Congratulations!</p>
+                    {% elif winner == 'opponent' %}
+                    <h4 style="color: #2c2f45; font-weight: 700; margin-bottom: 0.5rem;">
+                        <span class="material-symbols-outlined me-2" style="font-size: 2rem;">emoji_events</span>
+                        {{ opponent.username }} Wins!
+                    </h4>
+                    <p style="color: #8a5c00;">Congratulations!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}
