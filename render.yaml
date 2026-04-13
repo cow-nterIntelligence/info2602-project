@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: fastapi-starter
+    env: docker
+    plan: free # Change to a different plan if needed
+    envVars:
+      - key: DATABASE_URI
+        fromDatabase:
+          name: starter-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ENV
+        value: production
+databases:
+  - name: starter-db
+    plan: free # Change to a different plan if needed
