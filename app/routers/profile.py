@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Request, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi import status
-from typer.cli import app
 
 from app.dependencies.auth import AuthDep
 from app.dependencies.session import SessionDep
