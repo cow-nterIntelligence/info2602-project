@@ -8,7 +8,6 @@ from app.config import get_settings
 from contextlib import asynccontextmanager
 from fastapi.staticfiles import StaticFiles
 
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     from app.database import create_db_and_tables

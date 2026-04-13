@@ -27,15 +27,15 @@ dependencies = [
     "sqlmodel",
     "tabulate",
     "typer",
-    "uvicorn[standard]",
+    "uvicorn[standard]"
 ]
-[project.optional-dependencies]
-dev = [
 
-]
+[project.optional-dependencies]
+dev = []
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 
-[tool.setuptools]
-packages = ["app"]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["app*"]
