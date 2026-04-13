@@ -5,7 +5,7 @@
 <div class="container-fluid mt-4">
     <h2 style="color: #2c2f45; font-weight: 700; margin-bottom: 2rem;">Challenges</h2>
 
-    <!-- Pending Challenges Section -->
+    <!-- Pending Challenges Section (not yet accepted) -->
     {% if pending_challenges %}
     <div class="mb-5">
         <h4 style="color: #2c2f45; font-weight: 700; margin-bottom: 1.5rem;">
@@ -23,9 +23,11 @@
                         </div>
                         <p class="card-text text-muted" style="font-size: 0.85rem; margin-top: 0.5rem;">
                             {% if item.is_challenger %}
+                            <span class="material-symbols-outlined me-1" style="font-size: 0.9rem; vertical-align: middle;">hourglass_top</span>
                             Waiting for {{ item.opponent.username }} to accept
                             {% else %}
-                            {{ item.challenge.challenger_id | string }} challenged you
+                            <span class="material-symbols-outlined me-1" style="font-size: 0.9rem; vertical-align: middle;">sports_kabaddi</span>
+                            {{ item.opponent.username }} challenged you!
                             {% endif %}
                         </p>
                         <hr style="border-color: #f0d079;">
@@ -56,7 +58,7 @@
     </div>
     {% endif %}
 
-    <!-- Active Challenges Section -->
+    <!-- Active Challenges Section (accepted, current user hasn't played yet) -->
     {% if active_challenges %}
     <div class="mb-5">
         <h4 style="color: #2c2f45; font-weight: 700; margin-bottom: 1.5rem;">
@@ -75,8 +77,41 @@
                         </p>
                         <hr style="border-color: #ffcf47;">
                         <a href="{{ request.url_for('challenge_detail_view', challenge_id=item.challenge.id) }}" class="btn btn-sm w-100" style="background-color: #ffcf47; color: #1a1d2f; font-weight: 700;">
+                            <span class="material-symbols-outlined me-1" style="font-size: 0.9rem;">sports_kabaddi</span>
+                            Play Challenge
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Waiting for Opponent Section (current user played, opponent hasn't) -->
+    {% if waiting_challenges %}
+    <div class="mb-5">
+        <h4 style="color: #2c2f45; font-weight: 700; margin-bottom: 1.5rem;">
+            <span class="material-symbols-outlined me-2" style="font-size: 1.5rem;">hourglass_bottom</span>
+            Waiting for Opponent
+        </h4>
+        <div class="row">
+            {% for item in waiting_challenges %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card" style="border: 2px dashed #ffcf47; box-shadow: 0 4px 12px rgba(255, 207, 71, 0.12);">
+                    <div class="card-body">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <h5 class="card-title" style="color: #2c2f45; font-weight: 700; margin: 0;">{{ item.opponent.username }}</h5>
+                            <span class="badge" style="background-color: #e8f4fd; color: #1a6fa1; font-weight: 700;">You Played</span>
+                        </div>
+                        <p class="card-text text-muted" style="font-size: 0.85rem; margin-top: 0.5rem;">
+                            <span class="material-symbols-outlined me-1" style="font-size: 0.9rem; vertical-align: middle;">hourglass_top</span>
+                            Waiting for {{ item.opponent.username }} to play
+                        </p>
+                        <hr style="border-color: #f0d079;">
+                        <a href="{{ request.url_for('challenge_detail_view', challenge_id=item.challenge.id) }}" class="btn btn-sm w-100" style="background-color: #b8e0d2; color: #2c2f45; font-weight: 700;">
                             <span class="material-symbols-outlined me-1" style="font-size: 0.9rem;">visibility</span>
-                            View Challenge
+                            View Details
                         </a>
                     </div>
                 </div>
@@ -117,7 +152,7 @@
     {% endif %}
 
     <!-- No Challenges Message -->
-    {% if not pending_challenges and not active_challenges and not completed_challenges %}
+    {% if not pending_challenges and not active_challenges and not waiting_challenges and not completed_challenges %}
     <div class="alert alert-info" role="alert" style="border-color: #b8e0d2; background-color: #f0fffe;">
         <span class="material-symbols-outlined me-2">info</span>
         No challenges yet! <a href="{{ request.url_for('friends_view') }}">Add some friends and challenge them!</a>

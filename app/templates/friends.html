@@ -15,7 +15,99 @@
         </div>
     </div>
 
+    <!-- Pending Requests Received (this user must accept/decline) -->
+    {% if pending_received %}
+    <div class="mb-5">
+        <h5 style="color: #8a5c00; font-weight: 700; margin-bottom: 1rem;">
+            <span class="material-symbols-outlined me-1" style="font-size: 1.2rem; vertical-align: middle;">mark_email_unread</span>
+            Friend Requests ({{ pending_received | length }})
+        </h5>
+        <div class="row">
+            {% for item in pending_received %}
+            <div class="col-md-6 col-lg-4 mb-3">
+                <div class="card" style="border: 2px solid #ffcf47; box-shadow: 0 4px 12px rgba(255, 207, 71, 0.2);">
+                    <div class="card-body">
+                        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+                            <span class="material-symbols-outlined" style="font-size: 2rem; color: #ffcf47;">account_circle</span>
+                            <div>
+                                <h6 class="mb-0" style="color: #2c2f45; font-weight: 700;">{{ item.user.username }}</h6>
+                                <small class="text-muted">{{ item.user.email }}</small>
+                            </div>
+                        </div>
+                        <p class="text-muted mb-2" style="font-size: 0.85rem;">
+                            <span class="material-symbols-outlined me-1" style="font-size: 0.9rem; vertical-align: middle;">schedule</span>
+                            Sent you a friend request
+                        </p>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <form method="post" action="{{ request.url_for('accept_friend') }}" style="flex: 1;">
+                                <input type="hidden" name="request_id" value="{{ item.request_id }}">
+                                <button type="submit" class="btn btn-sm w-100" style="background-color: #ffcf47; color: #1a1d2f; font-weight: 700;">
+                                    <span class="material-symbols-outlined me-1" style="font-size: 0.9rem;">done</span>
+                                    Accept
+                                </button>
+                            </form>
+                            <form method="post" action="{{ request.url_for('decline_friend') }}" style="flex: 1;">
+                                <input type="hidden" name="request_id" value="{{ item.request_id }}">
+                                <button type="submit" class="btn btn-sm w-100" style="background-color: #f3f3f3; color: #666; font-weight: 700;">
+                                    <span class="material-symbols-outlined me-1" style="font-size: 0.9rem;">close</span>
+                                    Decline
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Pending Requests Sent (waiting for response) -->
+    {% if pending_sent %}
+    <div class="mb-5">
+        <h5 style="color: #8a5c00; font-weight: 700; margin-bottom: 1rem;">
+            <span class="material-symbols-outlined me-1" style="font-size: 1.2rem; vertical-align: middle;">schedule_send</span>
+            Pending Requests Sent
+        </h5>
+        <div class="row">
+            {% for item in pending_sent %}
+            <div class="col-md-6 col-lg-4 mb-3">
+                <div class="card" style="border: 2px dashed #f0d079; box-shadow: 0 2px 8px rgba(144, 104, 0, 0.08);">
+                    <div class="card-body">
+                        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+                            <span class="material-symbols-outlined" style="font-size: 2rem; color: #c9a227;">account_circle</span>
+                            <div>
+                                <h6 class="mb-0" style="color: #2c2f45; font-weight: 700;">{{ item.user.username }}</h6>
+                                <small class="text-muted">{{ item.user.email }}</small>
+                            </div>
+                        </div>
+                        <p class="text-muted mb-2" style="font-size: 0.85rem;">
+                            <span class="material-symbols-outlined me-1" style="font-size: 0.9rem; vertical-align: middle;">hourglass_top</span>
+                            Your friend request to <strong>{{ item.user.username }}</strong> is pending
+                        </p>
+                        <form method="post" action="{{ request.url_for('decline_friend') }}">
+                            <input type="hidden" name="request_id" value="{{ item.request_id }}">
+                            <button type="submit" class="btn btn-sm w-100" style="background-color: #f3f3f3; color: #666; font-weight: 700;" onclick="return confirm('Cancel this friend request?');">
+                                <span class="material-symbols-outlined me-1" style="font-size: 0.9rem;">cancel</span>
+                                Cancel Request
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Accepted Friends -->
     {% if friends %}
+    {% if pending_received or pending_sent %}
+    <h5 style="color: #2c2f45; font-weight: 700; margin-bottom: 1rem;">
+        <span class="material-symbols-outlined me-1" style="font-size: 1.2rem; vertical-align: middle;">people</span>
+        Friends
+    </h5>
+    {% endif %}
     <div class="row">
         {% for friend in friends %}
         <div class="col-md-6 col-lg-4 mb-4">
@@ -38,7 +130,7 @@
                         <form method="post" action="{{ request.url_for('create_challenge') }}" style="flex: 1;">
                             <input type="hidden" name="opponent_id" value="{{ friend.id }}">
                             <button type="submit" class="btn btn-sm w-100" style="background-color: #ffcf47; color: #1a1d2f; font-weight: 700;">
-                                <span class="material-symbols-outlined me-1" style="font-size: 0.9rem;">sword</span>
+                                <span class="material-symbols-outlined me-1" style="font-size: 0.9rem;">sports_kabaddi</span>
                                 Challenge
                             </button>
                         </form>
@@ -48,7 +140,7 @@
         </div>
         {% endfor %}
     </div>
-    {% else %}
+    {% elif not pending_received and not pending_sent %}
     <div class="alert alert-info" role="alert" style="border-color: #b8e0d2; background-color: #f0fffe;">
         <span class="material-symbols-outlined me-2">info</span>
         You don't have any friends yet. <a href="{{ request.url_for('search_users_view') }}">Search for users to add as friends!</a>
