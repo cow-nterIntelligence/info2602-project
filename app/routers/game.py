@@ -20,7 +20,6 @@ async def game_view(request: Request, user: AuthDep, db: SessionDep):
     repo = GameRepository(db)
     streak_summary = repo.sync_user_streaks(user.id, today)
     guesses = repo.get_guesses_for_day(user.id, today)
-    played_today = repo.has_played_today(user.id, today)
     solved = repo.has_solved_today(user.id, today)
     gave_up = repo.has_given_up_today(user.id, today)
     revealed_code = get_daily_puzzle(today) if solved or gave_up else None
@@ -30,7 +29,6 @@ async def game_view(request: Request, user: AuthDep, db: SessionDep):
         context={
             "user": user,
             "guesses": guesses,
-            "played_today": played_today,
             "solved": solved,
             "gave_up": gave_up,
             "revealed_code": revealed_code,
@@ -45,13 +43,11 @@ async def game_guess(request: Request, user: AuthDep, db: SessionDep, guess: str
     repo = GameRepository(db)
     challenge_repo = ChallengeRepository(db)
 
-    if repo.has_played_today(user.id, today):
+    if repo.has_completed_today(user.id, today):
         if repo.has_solved_today(user.id, today):
-            flash(request, "You already played today's puzzle and guessed correctly. Come back tomorrow.", "info")
-        elif repo.has_given_up_today(user.id, today):
-            flash(request, "You already played today's puzzle and gave up. Come back tomorrow.", "info")
+            flash(request, "You already solved today's puzzle. Come back tomorrow.", "info")
         else:
-            flash(request, "You already played today's puzzle. Come back tomorrow.", "info")
+            flash(request, "You already gave up on today's puzzle. Come back tomorrow.", "info")
         return RedirectResponse(url=request.url_for("game_view"), status_code=status.HTTP_302_FOUND)
 
     if len(guess) != 4 or not guess.isdigit() or len(set(guess)) != 4:
@@ -84,13 +80,11 @@ async def game_give_up(request: Request, user: AuthDep, db: SessionDep):
     repo = GameRepository(db)
     challenge_repo = ChallengeRepository(db)
 
-    if repo.has_played_today(user.id, today):
+    if repo.has_completed_today(user.id, today):
         if repo.has_solved_today(user.id, today):
-            flash(request, "You already played today's puzzle and guessed correctly. Come back tomorrow.", "info")
-        elif repo.has_given_up_today(user.id, today):
-            flash(request, "You already played today's puzzle and gave up. Come back tomorrow.", "info")
+            flash(request, "You already solved today's puzzle. Come back tomorrow.", "info")
         else:
-            flash(request, "You already played today's puzzle. Come back tomorrow.", "info")
+            flash(request, "You already gave up on today's puzzle. Come back tomorrow.", "info")
     else:
         repo.save_give_up(user.id, today)
         repo.sync_user_streaks(user.id, today)

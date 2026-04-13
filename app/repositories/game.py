@@ -146,7 +146,7 @@ class GameRepository:
             for g in guesses
             if g.bulls == 4
         })
-        played_today = any(g.day == today for g in guesses)
+        gave_up_today = any(g.day == today and g.guess == self.GIVE_UP_MARKER for g in guesses)
         solved_today = any(g.day == today and g.bulls == 4 for g in guesses)
 
         longest_streak = 0
@@ -163,7 +163,7 @@ class GameRepository:
         current_streak = 0
         if solved_days:
             latest_solved = solved_days[-1]
-            if played_today and not solved_today:
+            if gave_up_today:
                 current_streak = 0
             elif latest_solved >= today_date - timedelta(days=1):
                 current_streak = 1
