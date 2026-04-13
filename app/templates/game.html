@@ -2,9 +2,6 @@
 
 {% block subpage_content %}
 
-<!-- Floating background mascots -->
-<div id="mascot-floats"></div>
-
 <div class="game-main-flex">
   <!-- Left side: instructions -->
   <div class="game-left">
@@ -26,7 +23,7 @@
       {% endif %}
     </div>
 
-    {% if not played_today %}
+    {% if not solved and not gave_up %}
     <form method="post" action="{{ request.url_for('game_give_up') }}" style="margin-top: 0.9em;">
         <button class="start-btn" type="submit">Give Up</button>
     </form>
@@ -40,17 +37,12 @@
     {% if solved %}
         <div class="winner-box">
             <span class="material-symbols-outlined" style="font-size:2rem; vertical-align:middle;">emoji_events</span>
-            You already played today's puzzle and guessed correctly. Come back tomorrow.
+            You solved today's puzzle! Come back tomorrow.
         </div>
     {% elif gave_up %}
         <div class="winner-box" style="background: #fff1f1; color: #9b2c2c; border-color: #f1a5a5;">
             <span class="material-symbols-outlined" style="font-size:2rem; vertical-align:middle;">flag</span>
-            You already played today's puzzle and gave up. The secret code is now revealed.
-        </div>
-    {% elif played_today %}
-        <div class="winner-box" style="background: #fff6dd; color: #8a5c00; border-color: #f0c766;">
-            <span class="material-symbols-outlined" style="font-size:2rem; vertical-align:middle;">schedule</span>
-            You already played today's puzzle. Come back tomorrow for a new one.
+            You gave up. The secret code is now revealed.
         </div>
     {% else %}
     <div class="guess-clickpad-box">
@@ -146,48 +138,6 @@ function submitGuess() {
     return true;
 }
 document.addEventListener('DOMContentLoaded', updatePreview);
-</script>
-
-<!-- Bouncing mascots -->
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-  const herd = [
-    {type: "bull", emoji: "🐂", color: "#a87c1c", count: 3},
-    {type: "cow",  emoji: "🐄", color: "#999", count: 3}
-  ];
-  const mascotArea = document.getElementById("mascot-floats");
-  let mascotEls = [];
-  herd.forEach(cfg => {
-    for (let i = 0; i < cfg.count; ++i) {
-      let m = document.createElement("div");
-      m.className = `bouncer-mascot ${cfg.type}`;
-      m.textContent = cfg.emoji;
-      m.style.color = cfg.color;
-      mascotArea.appendChild(m);
-      mascotEls.push(m);
-    }
-  });
-  mascotEls.forEach(function(el) {
-    const size = 70;
-    function randBetween(a, b) { return a + Math.random() * (b - a); }
-    let vw = window.innerWidth, vh = window.innerHeight;
-    let x = randBetween(0, vw - size), y = randBetween(0, vh - size);
-    let dx = randBetween(0.5, 2) * (Math.random() < 0.5 ? 1 : -1);
-    let dy = randBetween(0.5, 2) * (Math.random() < 0.5 ? 1 : -1);
-    function move() {
-      vw = window.innerWidth; vh = window.innerHeight;
-      x += dx; y += dy;
-      if (x < 0 || x > vw - size) dx = -dx;
-      if (y < 0 || y > vh - size) dy = -dy;
-      x = Math.max(0, Math.min(vw - size, x));
-      y = Math.max(0, Math.min(vh - size, y));
-      el.style.left = x + "px";
-      el.style.top = y + "px";
-      requestAnimationFrame(move);
-    }
-    move();
-  });
-});
 </script>
 
 {% endblock %}
