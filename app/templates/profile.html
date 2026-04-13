@@ -1,0 +1,336 @@
+{% extends "authenticated-base.html" %}
+
+{% block additional_styles %}
+<style>
+    .profile-shell {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .profile-card {
+        background: rgba(255, 255, 255, 0.9);
+        border: 2px solid rgba(244, 217, 142, 0.8);
+        border-radius: 1.2rem;
+        padding: 1.4rem;
+        box-shadow: 0 12px 28px rgba(144, 104, 0, 0.08);
+    }
+
+    .profile-card h3 {
+        margin: 0 0 1rem 0;
+        color: #2d3553;
+        font-size: 1.1rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+
+    .profile-info-row {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .profile-info-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        background: #fffdf5;
+        border: 1px solid #f1dfad;
+        border-radius: 0.9rem;
+    }
+
+    .profile-info-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #9b8450;
+        min-width: 80px;
+    }
+
+    .profile-info-value {
+        font-weight: 700;
+        color: #2d3553;
+    }
+
+    .profile-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .profile-stat-item {
+        text-align: center;
+        padding: 1rem;
+        background: #fffdf5;
+        border: 1px solid #f1dfad;
+        border-radius: 0.9rem;
+    }
+
+    .profile-stat-value {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: #2d3553;
+        line-height: 1;
+    }
+
+    .profile-stat-label {
+        margin-top: 0.3rem;
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #9b8450;
+    }
+
+    .profile-form-row {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .profile-form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+    }
+
+    .profile-form-group label {
+        font-weight: 700;
+        color: #7a5200;
+        font-size: 0.9rem;
+    }
+
+    .profile-form-group input {
+        padding: 0.72rem 0.9rem;
+        border: 2px solid #f0d079;
+        border-radius: 0.9rem;
+        background: #fffdf4;
+        color: #5a4300;
+        font-size: 0.95rem;
+    }
+
+    .profile-form-group input:focus {
+        outline: none;
+        border-color: #e0a800;
+    }
+
+    .profile-submit-btn {
+        align-self: flex-start;
+        padding: 0.75rem 1.4rem;
+        border: none;
+        border-radius: 0.95rem;
+        background: linear-gradient(135deg, #ffb52f 0%, #ffdd76 100%);
+        color: #463000;
+        font-weight: 800;
+        cursor: pointer;
+    }
+
+    .activity-item {
+        display: flex;
+        align-items: center;
+        gap: 0.9rem;
+        padding: 0.85rem 1rem;
+        background: #fffdf5;
+        border: 1px solid #f1dfad;
+        border-radius: 0.9rem;
+    }
+
+    .activity-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #fff5cc 0%, #ffd966 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        color: #7a5200;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+        box-shadow: inset 0 0 0 2px rgba(237, 185, 46, 0.45);
+    }
+
+    .activity-username {
+        font-weight: 800;
+        color: #2d3553;
+    }
+
+    .activity-detail {
+        font-size: 0.88rem;
+        color: #7a6a3f;
+        margin-top: 0.15rem;
+    }
+
+    .activity-empty {
+        padding: 1.5rem;
+        text-align: center;
+        color: #9b8450;
+        font-style: italic;
+    }
+
+    @media (max-width: 760px) {
+        .profile-stats-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+</style>
+{% endblock %}
+
+{% block subpage_content %}
+<div class="profile-shell">
+
+    <!-- Profile Info -->
+    <div class="profile-card">
+        <h3>
+            <span class="material-symbols-outlined" style="vertical-align:middle; font-size:1.1rem;">
+                account_circle
+            </span>
+            My Profile
+        </h3>
+        <div class="profile-info-row">
+            <div class="profile-info-item">
+                <span class="profile-info-label">Username</span>
+                <span class="profile-info-value">{{ user.username }}</span>
+            </div>
+            <div class="profile-info-item">
+                <span class="profile-info-label">Email</span>
+                <span class="profile-info-value">{{ user.email }}</span>
+            </div>
+            <div class="profile-info-item">
+                <span class="profile-info-label">Friends</span>
+                <span class="profile-info-value">{{ friend_count }}</span>
+            </div>
+            {% if stats.badge %}
+            <div class="profile-info-item">
+                <span class="profile-info-label">Badge</span>
+                <span class="profile-info-value">
+                    <span class="material-symbols-outlined" style="font-size:1rem; vertical-align:middle;">
+                        {{ stats.badge.icon }}
+                    </span>
+                    {{ stats.badge.name }}
+                </span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Game Stats -->
+    <div class="profile-card">
+        <h3>
+            <span class="material-symbols-outlined" style="vertical-align:middle; font-size:1.1rem;">
+                bar_chart
+            </span>
+            Game Stats
+        </h3>
+        <div class="profile-stats-grid">
+            <div class="profile-stat-item">
+                <div class="profile-stat-value">{{ stats.days_won }}</div>
+                <div class="profile-stat-label">Puzzles Solved</div>
+            </div>
+            <div class="profile-stat-item">
+                <div class="profile-stat-value">{{ stats.win_rate }}%</div>
+                <div class="profile-stat-label">Win Rate</div>
+            </div>
+            <div class="profile-stat-item">
+                <div class="profile-stat-value">{{ stats.avg_guesses }}</div>
+                <div class="profile-stat-label">Avg Guesses</div>
+            </div>
+            <div class="profile-stat-item">
+                <div class="profile-stat-value">{{ stats.best_game }}</div>
+                <div class="profile-stat-label">Best Game</div>
+            </div>
+            <div class="profile-stat-item">
+                <div class="profile-stat-value">{{ stats.current_streak }}</div>
+                <div class="profile-stat-label">Current Streak</div>
+            </div>
+            <div class="profile-stat-item">
+                <div class="profile-stat-value">{{ stats.longest_streak }}</div>
+                <div class="profile-stat-label">Longest Streak</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Friend Activity Feed -->
+    <div class="profile-card">
+        <h3>
+            <span class="material-symbols-outlined" style="vertical-align:middle; font-size:1.1rem;">
+                group
+            </span>
+            Friend Activity
+        </h3>
+
+        {% if friend_activity %}
+        <div class="profile-info-row">
+            {% for f in friend_activity %}
+            <div class="activity-item">
+                <div class="activity-avatar">{{ f.username[0].upper() }}</div>
+                <div>
+                    <div class="activity-username">{{ f.username }}</div>
+                    <div class="activity-detail">
+                        {% if f.solved_today %}
+                            <span class="material-symbols-outlined" style="font-size:0.95rem; vertical-align:middle; color:green;">check_circle</span>
+                            Solved today's puzzle in {{ f.guess_count_today }} guess{{ 'es' if f.guess_count_today != 1 }}
+                        {% elif f.gave_up_today %}
+                            <span class="material-symbols-outlined" style="font-size:0.95rem; vertical-align:middle; color:#b06800;">flag</span>
+                            Gave up on today's puzzle
+                        {% elif f.played_today %}
+                            <span class="material-symbols-outlined" style="font-size:0.95rem; vertical-align:middle; color:#7a5200;">casino</span>
+                            Playing today's puzzle
+                        {% else %}
+                            <span class="material-symbols-outlined" style="font-size:0.95rem; vertical-align:middle; color:#aaa;">schedule</span>
+                            Hasn't played today yet
+                        {% endif %}
+                        &nbsp;·&nbsp;
+                        <span class="material-symbols-outlined" style="font-size:0.85rem; vertical-align:middle;">local_fire_department</span>
+                        {{ f.current_streak }} day streak
+                        {% if f.badge %}
+                            &nbsp;·&nbsp;
+                            <span class="material-symbols-outlined" style="font-size:0.85rem; vertical-align:middle;">{{ f.badge.icon }}</span>
+                            {{ f.badge.name }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="activity-empty">
+            No friends added yet.
+            <a href="{{ request.url_for('search_users_view') }}">Find some players to add!</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Change Password -->
+    <div class="profile-card">
+        <h3>
+            <span class="material-symbols-outlined" style="vertical-align:middle; font-size:1.1rem;">
+                lock
+            </span>
+            Change Password
+        </h3>
+        <form method="post" action="{{ request.url_for('change_password') }}" class="profile-form-row">
+            <div class="profile-form-group">
+                <label for="current_password">Current Password</label>
+                <input type="password" id="current_password" name="current_password" required>
+            </div>
+            <div class="profile-form-group">
+                <label for="new_password">New Password</label>
+                <input type="password" id="new_password" name="new_password" required minlength="8">
+            </div>
+            <div class="profile-form-group">
+                <label for="confirm_password">Confirm New Password</label>
+                <input type="password" id="confirm_password" name="confirm_password" required minlength="8">
+            </div>
+            <button type="submit" class="profile-submit-btn">
+                <span class="material-symbols-outlined" style="vertical-align:middle; font-size:1rem;">save</span>
+                Update Password
+            </button>
+        </form>
+    </div>
+
+</div>
+{% endblock %}
