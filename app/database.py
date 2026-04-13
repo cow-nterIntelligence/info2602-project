@@ -2,6 +2,7 @@ import logging
 from sqlmodel import SQLModel, Session, create_engine
 from app.config import get_settings
 from contextlib import contextmanager
+from sqlalchemy import text
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +17,25 @@ engine = create_engine(
 
 def create_db_and_tables():
     SQLModel.metadata.create_all(engine)
+    _ensure_legacy_schema_updates()
+
+
+def _ensure_legacy_schema_updates():
+    with engine.begin() as connection:
+        try:
+            friend_columns = {
+                row[1] for row in connection.execute(text("PRAGMA table_info(friend)"))
+            }
+            if friend_columns and "status" not in friend_columns:
+                connection.execute(
+                    text("ALTER TABLE friend ADD COLUMN status VARCHAR NOT NULL DEFAULT 'pending'")
+                )
+                connection.execute(
+                    text("CREATE INDEX IF NOT EXISTS ix_friend_status ON friend (status)")
+                )
+        except Exception as e:
+            logger.error(f"Schema update error: {e}")
+            raise
 
 def drop_all():
     SQLModel.metadata.drop_all(bind=engine)
