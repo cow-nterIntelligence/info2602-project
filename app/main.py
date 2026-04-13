@@ -2,7 +2,8 @@ import uvicorn
 from fastapi import FastAPI, Request, status
 from starlette.middleware import Middleware
 from starlette.middleware.sessions import SessionMiddleware
-from app.routers import templates, static_files, router, api_router, game, friends, challenges
+from app.routers import router, api_router
+from app.routers import game, friends, challenges
 from app.config import get_settings
 from contextlib import asynccontextmanager
 from fastapi.staticfiles import StaticFiles
